@@ -41,7 +41,7 @@ docs:
 
 clean: clean_obj clean_exe clean_logs
 
-clean_obj: $(OBJ_DIR)
+clean_obj:
 	rm $(OBJ_DIR)/*.o
 
 clean_exe:

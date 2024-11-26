@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #include "tree.h"
-#include "tree_dump.h"
 #include "utils.h"
 
 static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err);
 static void NodeCpy          (Node_t* node_dest, Node_t* node_src);
+static void NullifyNode      (Node_t* node);
 
 
 static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
@@ -50,21 +50,6 @@ static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 }
 
 
-static void NodeCpy(Node_t* node_dest, Node_t* node_src)
-{
-    node_dest->type  = node_src->type;
-    node_dest->value = node_src->value;
-
-    Node_t* left_son_ptr = node_dest->left;
-    node_dest->left = node_src->left;
-    free(left_son_ptr);
-
-    Node_t* right_son_ptr = node_dest->right;
-    node_dest->right = node_src->right;
-    free(right_son_ptr);
-}
-
-
 Node_t* NewNode(TreeElemType elem_type, double elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
 {
     Node_t* new_node = (Node_t*) calloc(1, sizeof(Node_t));
@@ -96,24 +81,40 @@ Node_t* NewNode(TreeElemType elem_type, double elem_value, Node_t* left_son_ptr,
 }
 
 
+static void NodeCpy(Node_t* node_dest, Node_t* node_src)
+{
+    node_dest->type  = node_src->type;
+    node_dest->value = node_src->value;
+
+    Node_t* left_son_ptr = node_dest->left;
+    node_dest->left = node_src->left;
+    free(left_son_ptr);
+
+    Node_t* right_son_ptr = node_dest->right;
+    node_dest->right = node_src->right;
+    free(right_son_ptr);
+}
+
+
+static void NullifyNode(Node_t* node)
+{
+    node->type = CONST;
+    node->value.value_const = 0;
+
+    free(node->left); node->left = NULL;
+    free(node->right); node->right = NULL;
+}
+
+
 #define DO_OP_WITH_ONE_CONST_(__const_node__, __nonconst_node__)                                            \
     if (node->value.value_op == MUL && IsZero(node->__const_node__->value.value_const))                     \
-    {                                                                                                       \
-        node->type = CONST;                                                                                 \
-        node->value.value_const = 0;                                                                        \
-                                                                                                            \
-        free(node->left); node->left = NULL;                                                                \
-        free(node->right); node->right = NULL;                                                              \
-    }                                                                                                       \
+        NullifyNode(node);                                                                                  \
                                                                                                             \
     else if ((node->value.value_op == MUL || node->value.value_op == DIV) &&                                \
              IsEqual(node->__const_node__->value.value_const, 1))                                           \
     {                                                                                                       \
         NodeCpy(node, node->__nonconst_node__);                                                             \
     }                                                                                                       \
-                                                                                                            \
-    else if (node->value.value_op == DIV && IsZero(node->__const_node__->value.value_const))                \
-        *p_code_err = ZERO_DIVISION_ERR;                                                                    \
                                                                                                             \
     else if ((node->value.value_op == ADD || node->value.value_op == SUB) &&                                \
                 IsZero(node->__const_node__->value.value_const))                                            \
@@ -148,11 +149,18 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 
                 else if (node->left->type == CONST)
                 {
+                    if (IsZero(node->left->value.value_const))
+                        NullifyNode(node);
                     DO_OP_WITH_ONE_CONST_(left, right);
                 }
 
                 else if (node->right->type == CONST)
                 {
+                    if (IsZero(node->right->value.value_const))
+                    {
+                        *p_code_err = ZERO_DIVISION_ERR;
+                        return false;
+                    }
                     DO_OP_WITH_ONE_CONST_(right, left);
                 }
 
@@ -181,4 +189,13 @@ void TreeDtor(Node_t* node)
         TreeDtor(node->right);
 
     free(node);
+}
+
+
+Node_t* TreeCpy(Node_t* node_src)
+{
+    if (node_src == NULL)
+        return NULL;
+
+    return NewNode(node_src->type, node_src->value.value_const, TreeCpy(node_src->left), TreeCpy(node_src->right));
 }

@@ -1,6 +1,8 @@
 #ifndef _INPUT_OUTPUT_H
 #define _INPUT_OUTPUT_T
 
+#include "tree.h"
+
 #define BLK "\033[0;30m"
 #define RED "\033[0;31m"
 #define GRN "\033[0;32m"
@@ -10,6 +12,7 @@
 #define CYN "\033[0;36m"
 #define WHT "\033[0;37m"
 
-void PrintCodeError(CodeError code_err);
+void    PrintCodeError  (CodeError code_err);
+Node_t* ScanTreeFromFile(const char* file_name, CodeError* p_code_err);
 
 #endif
