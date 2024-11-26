@@ -7,7 +7,22 @@ int main()
 {
     CodeError code_err = NO_ERR;
 
-    Node_t* root = _DIV(_ADD(_X, _NUM(3)), _SUB(_NUM(1000), _NUM(7)));
+    Node_t* root = _DIV(
+                        _ADD(
+                             _ADD(
+                                  _MUL(_NUM(0), _Y),
+                                  _MUL(_NUM(1), _X)
+                                 ),
+                             _MUL(_NUM(2), _Z)
+                            ),
+                        _ADD(
+                             _ADD(
+                                  _MUL(_NUM(0), _Z),
+                                  _MUL(_NUM(0), _X)
+                                 ),
+                             _NUM(1)
+                            )
+                       );
     TreeDump(root);
 
     SimplifyTree(root, &code_err);
