@@ -1,10 +1,11 @@
 #include "settings.h" // !!!
 
+#include "formula_scanner.h"
+#include "input_output.h"
 #include "tree.h"
 #include "tree_dump.h"
-#include "input_output.h"
 
-static const char* const FILE_WITH_FORMULAS = TEX_DIR "formulas.txt";
+static const char* const INPUT_FILE_WITH_FORMULAS = FORMULAS_DIR "formulas.txt";
 
 CodeError RunProgram();
 
@@ -20,7 +21,8 @@ CodeError RunProgram()
 {
     CodeError code_err = NO_ERR;
 
-    Node_t* root = ScanTreeFromFile(FILE_WITH_FORMULAS, &code_err);
+    Node_t* root = ScanFormulaFromFile(INPUT_FILE_WITH_FORMULAS, &code_err);
     TreeDump(root);
-    return NO_ERR;
+
+    return code_err;
 }

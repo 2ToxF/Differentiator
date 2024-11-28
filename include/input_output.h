@@ -12,7 +12,7 @@
 #define CYN "\033[0;36m"
 #define WHT "\033[0;37m"
 
-void    PrintCodeError  (CodeError code_err);
-Node_t* ScanTreeFromFile(const char* file_name, CodeError* p_code_err);
+CodeError MyFread        (char** input_buffer, int* input_buffer_length, const char* input_file_name);
+void      PrintCodeError (CodeError code_err);
 
 #endif

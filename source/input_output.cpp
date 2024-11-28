@@ -1,13 +1,34 @@
 #include "settings.h" // !!!
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "input_output.h"
 #include "tree.h"
+#include "utils.h"
 
 static const int MAX_STR_VALUE_LEN = 40;
 
-static Node_t* ScanNodeFromFile(FILE* file_ptr);
+
+CodeError MyFread(char** input_buffer, int* input_buffer_length, const char* input_file_name)
+{
+    CodeError code_err = NO_ERR;
+
+    FILE* input_fptr = fopen(input_file_name, "rb");
+    if (input_fptr == NULL)
+        return FILE_NOT_OPENED_ERR;
+
+    if ((code_err = Fsize(input_file_name, input_buffer_length)) != NO_ERR)
+        return code_err;
+
+    *input_buffer = (char*) calloc(*input_buffer_length, sizeof(char));
+    long long unsigned int success_read_string_length = fread(*input_buffer, 1, *input_buffer_length - 1, input_fptr);
+    if (success_read_string_length != (long long unsigned int) (*input_buffer_length - 1))
+        return WRONG_INPUT_BUFSIZE_ERR;
+
+    fclose(input_fptr); input_fptr = NULL;
+    return code_err;
+}
 
 
 void PrintCodeError(CodeError code_error)
@@ -33,28 +54,4 @@ void PrintCodeError(CodeError code_error)
     }
 
     #undef ERR_DESCR_
-}
-
-
-static Node_t* ScanNodeFromFile(FILE* file_ptr)  // TODO: finish after Huawei on 11.27
-{
-    char read_info[MAX_STR_VALUE_LEN] = {};
-    if (fscanf(file_ptr, "%[^()]", read_info) == 0)
-    {
-    }
-    return NULL;
-}
-
-
-Node_t* ScanTreeFromFile(const char* file_name, CodeError* p_code_err)
-{
-    FILE* file_ptr = fopen(file_name, "w");
-    if (file_ptr == NULL)
-    {
-        *p_code_err = FILE_NOT_OPENED_ERR;
-        return NULL;
-    }
-
-    Node_t* root = ScanNodeFromFile(file_ptr);
-    return root;
 }
