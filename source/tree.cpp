@@ -10,6 +10,18 @@ static void NodeCpy          (Node_t* node_dest, Node_t* node_src);
 static void NullifyNode      (Node_t* node);
 
 
+bool CheckTreeForVars(Node_t* node)
+{
+    if (node == NULL)
+        return false;
+
+    if (CheckTreeForVars(node->left) == true)
+        return true;
+
+    return CheckTreeForVars(node->right);
+}
+
+
 static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 {
     node->type = CONST;
@@ -44,8 +56,8 @@ static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
             return true;
     }
 
-    free(node->left); node->left = NULL;
-    free(node->right); node->right = NULL;
+    TreeDtor(node->left); node->left = NULL;
+    TreeDtor(node->right); node->right = NULL;
     return false;
 }
 
@@ -101,8 +113,8 @@ static void NullifyNode(Node_t* node)
     node->type = CONST;
     node->value.value_const = 0;
 
-    free(node->left); node->left = NULL;
-    free(node->right); node->right = NULL;
+    TreeDtor(node->left); node->left = NULL;
+    TreeDtor(node->right); node->right = NULL;
 }
 
 
@@ -149,14 +161,14 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 
                 else if (node->left->type == CONST)
                 {
-                    if (IsZero(node->left->value.value_const))
+                    if (node->value.value_op == DIV && IsZero(node->left->value.value_const))
                         NullifyNode(node);
                     DO_OP_WITH_ONE_CONST_(left, right);
                 }
 
                 else if (node->right->type == CONST)
                 {
-                    if (IsZero(node->right->value.value_const))
+                    if (node->value.value_op == DIV && IsZero(node->right->value.value_const))
                     {
                         *p_code_err = ZERO_DIVISION_ERR;
                         return false;

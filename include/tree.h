@@ -9,9 +9,10 @@
 #define _NUM(__number__) NewNode(CONST, __number__, NULL, NULL)
 
 /// Create node with common variables
-#define _X               NewNode(VAR,   (int) 'x',  NULL, NULL)
-#define _Y               NewNode(VAR,   (int) 'y',  NULL, NULL)
-#define _Z               NewNode(VAR,   (int) 'z',  NULL, NULL)
+#define _X               NewNode(VAR,   (int) 'x',       NULL, NULL)
+#define _Y               NewNode(VAR,   (int) 'y',       NULL, NULL)
+#define _Z               NewNode(VAR,   (int) 'z',       NULL, NULL)
+#define _VAR(__char__)   NewNode(VAR,   (int) __char__,  NULL, NULL)
 
 /// Create node with operations (and functions)
 #define _ADD(__left_son__, __right_son__) NewNode(OP, ADD, __left_son__, __right_son__)
@@ -84,13 +85,6 @@ enum OpType
     ARCTH, ARCCTH,
 };
 
-enum PowType
-{
-    VAR_IN_BASE,
-    VAR_IN_POW,
-    VAR_IN_BOTH,
-};
-
 typedef union
 {
     double value_const;
@@ -109,11 +103,12 @@ struct Node_t
 
 /// -----------------------------------------------------------------------------------------------------------
 
-Node_t* NewNode     (TreeElemType elem_type, double elem_value,
-                     Node_t* left_son_ptr, Node_t* right_son_ptr);
-bool    SimplifyTree(Node_t* node, CodeError* p_code_err);
-Node_t* TreeCpy     (Node_t* node_src);
-void    TreeDtor    (Node_t* node);
+bool    CheckTreeForVars (Node_t* node);
+Node_t* NewNode          (TreeElemType elem_type, double elem_value,
+                          Node_t* left_son_ptr, Node_t* right_son_ptr);
+bool    SimplifyTree     (Node_t* node, CodeError* p_code_err);
+Node_t* TreeCpy          (Node_t* node_src);
+void    TreeDtor         (Node_t* node);
 
 
 #endif

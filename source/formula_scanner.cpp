@@ -1,175 +1,309 @@
 #include "settings.h" // !!!
 
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "formula_scanner.h"
 #include "input_output.h"
 #include "tree.h"
 #include "utils.h"
 
 #define CALL_SYNTAX_ERR \
-    { SyntaxError(__FILE__, __PRETTY_FUNCTION__, __LINE__) }
-
-/// -----------------------------------------------------------------------------------------------------------
-
-// const char* ADD_STR = "add";
-// const char* SUB_STR = "sub";
-// const char* MUL_STR = "mul";
-// const char* DIV_STR = "div";
-
-const char* EXP_STR = "exp";
-const char* LN_STR  = "ln";
-const char* POW_STR = "pow";
-const char* LOG_STR = "log";
-
-const char* SIN_STR = "sin";
-const char* COS_STR = "cos";
-const char* TAN_STR = "tan";
-const char* CTG_STR = "ctg";
-
-const char* SH_STR  = "sh";
-const char* CH_STR  = "ch";
-const char* TH_STR  = "th";
-const char* CTH_STR = "cth";
-
-const char* ARCSIN_STR = "arcsin";
-const char* ARCCOS_STR = "arccos";
-const char* ARCTAN_STR = "arctan";
-const char* ARCCTG_STR = "arcctg";
-
-const char* ARCSH_STR  = "arcsh";
-const char* ARCCH_STR  = "arcch";
-const char* ARCTH_STR  = "arcth";
-const char* ARCCTH_STR = "arccth";
-
-/// -----------------------------------------------------------------------------------------------------------
+    { SyntaxError(__FILE__, __PRETTY_FUNCTION__, __LINE__); }
 
 static const int MAX_FUNC_NAME_LEN = 10;
 
-char* file_buffer  = NULL;
-int   file_buf_idx = 0;
-int   buffer_len   = 0;
+char* file_buffer = NULL;
+int   p           = 0;
+int   buffer_len  = 0;
 
-static Node_t*   ScanOneNode();
-static CodeError SyntaxError(const char* file_name, const char* func_name, const int line_number);
+static Node_t* GetG();
+static Node_t* GetE();
+static Node_t* GetT();
+static Node_t* GetP();
+static Node_t* GetB();
+static Node_t* GetS();
+static Node_t* GetV();
+static Node_t* GetF(const char* func_name);
+static Node_t* GetN();
+
+static Node_t* GetFuncNode     (const char* func_name, Node_t* first_arg, Node_t* second_arg);
+// static Node_t*   ScanOneNode();
+static void    SyntaxError     (const char* file_name, const char* func_name, const int line_number);
+static void    UnknownFuncError(const char* file_name, const char* code_func_name,
+                                const int line_number, const char* algebr_func_name);
+
+/// -----------------------------------------------------------------------------------------------------------
+
+
+static Node_t* GetG()
+{
+    // printf("Enter GetG()\n");
+    // printf("%s\n", file_buffer);
+    Node_t* node = GetE();
+
+    if (file_buffer[p] != '\r')
+        CALL_SYNTAX_ERR;
+
+    ++p;
+    if (file_buffer[p] != '\n')
+        CALL_SYNTAX_ERR;
+
+    ++p;
+    // printf("Leave GetG()\n");
+    return node;
+}
+
+
+static Node_t* GetE()
+{
+    // printf("Enter GetE()\n");
+
+    Node_t* node = GetT();
+
+    if (file_buffer[p] == '+' || file_buffer[p] == '-')
+    {
+        char op = file_buffer[p];
+        ++p;
+
+        Node_t* new_node = GetE();
+
+        if (op == '+')
+            return _ADD(node, new_node);
+        else
+            return _SUB(node, new_node);
+    }
+
+    // printf("Leave GetE()\n");
+    return node;
+}
+
+
+static Node_t* GetT()
+{
+    // printf("Enter GetT()\n");
+
+    Node_t* node = GetP();
+
+    if (file_buffer[p] == '*' || file_buffer[p] == '/')
+    {
+        char op = file_buffer[p];
+        ++p;
+
+        Node_t* new_node = GetT();
+
+        if (op == '*')
+            return _MUL(node, new_node);
+        else
+            return _DIV(node, new_node);
+    }
+
+    // printf("Leave GetT()\n");
+    return node;
+}
+
+
+static Node_t* GetP()
+{
+    // printf("Enter GetP()\n");
+
+    Node_t* node = GetB();
+
+    if (file_buffer[p] == '^')
+    {
+        ++p;
+        Node_t* new_node = GetP();
+
+        return _POW(node, new_node);
+    }
+
+    // printf("Leave GetP()\n");
+    return node;
+}
+
+
+static Node_t* GetB()
+{
+    // printf("Enter GetB()\n");
+
+    if (file_buffer[p] == '(')
+    {
+        ++p;
+
+        Node_t* node = GetE();
+        if (file_buffer[p] != ')')
+            CALL_SYNTAX_ERR;
+
+        ++p;
+        // printf("Leave GetB() <-- GetE\n");
+        return node;
+    }
+
+    else
+    {
+        // printf("Leave GetB() <-- GetS\n");
+        return GetS();
+    }
+}
+
+
+static Node_t* GetS()
+{
+    // printf("Enter GetS()\n");
+
+    int old_p = p;
+    Node_t* node = GetV();
+
+    if (old_p == p)
+        return GetN();
+
+    // printf("Leave GetS()\n");
+    return node;
+}
+
+
+static Node_t* GetV()
+{
+    // printf("Enter GetV()\n");
+
+    int old_p = p;
+
+    char func_or_var_name[MAX_FUNC_NAME_LEN] = {};
+    sscanf(&file_buffer[p], "%[a-zA-Z]", func_or_var_name);
+
+    p += (int) strlen(func_or_var_name);
+
+    if (p - old_p == 0)
+    {
+        // printf("Leave GetV()\n");
+        return NULL;
+    }
+
+    if (p - old_p == 1 && file_buffer[p] != '(')
+    {
+        // printf("Leave GetV()\n");
+        return _VAR(*func_or_var_name);
+    }
+
+    else if (file_buffer[p] == '(')
+    {
+        ++p;
+        Node_t* node = GetF(func_or_var_name);
+
+        if (file_buffer[p] != ')')
+            CALL_SYNTAX_ERR;
+
+        ++p;
+        // printf("Leave GetV()\n");
+        return node;
+    }
+
+    CALL_SYNTAX_ERR;
+    return NULL;
+}
+
+
+static Node_t* GetF(const char* func_name)
+{
+    // // printf("Enter GetF()\n");
+
+    Node_t* node = GetE();
+
+    if (file_buffer[p] == ',')
+    {
+        ++p;
+        Node_t* new_node = GetE();
+        return GetFuncNode(func_name, node, new_node);
+    }
+
+    // printf("Leave GetF()\n");
+    return GetFuncNode(func_name, node, NULL);
+}
+
+
+static Node_t* GetN()  // TODO: make double
+{
+    int val = 0;
+    int old_p = p;
+
+    while ('0' <= file_buffer[p] && file_buffer[p] <= '9')
+    {
+        val = val*10 + file_buffer[p] - '0';
+        ++p;
+    }
+
+    if (p == old_p)
+        CALL_SYNTAX_ERR;
+
+    return _NUM(val);
+}
+
+
+/// -----------------------------------------------------------------------------------------------------------
+
+
+static Node_t* GetFuncNode(const char* algebr_func_name, Node_t* first_arg, Node_t* second_arg)
+{
+    if (second_arg != NULL && first_arg != NULL)
+    {
+        if (strcmp(algebr_func_name, LOG_STR) == 0)
+            return _LOG(first_arg, second_arg);
+    }
+
+    else if (first_arg != NULL)
+    {
+        if (strcmp(algebr_func_name, EXP_STR) == 0)
+            return _EXP(first_arg);
+
+        else if (strcmp(algebr_func_name, LN_STR) == 0)
+            return _LN(first_arg);
+    }
+
+    UnknownFuncError(__FILE__, __PRETTY_FUNCTION__, __LINE__, algebr_func_name);
+    return NULL;
+}
 
 
 Node_t* ScanFormulaFromFile(const char* file_name, CodeError* p_code_err)
 {
-    if (file_buffer == NULL)
-        MyFread(&file_buffer, &buffer_len, file_name);
+    CodeError code_err = NO_ERR;
 
-    if (file_buf_idx > buffer_len)
+    if (file_buffer == NULL)
+        if ((code_err = MyFread(&file_buffer, &buffer_len, file_name)) != NO_ERR)
+        {
+            PrintCodeError(code_err);
+            return NULL;
+        }
+
+    if (p > buffer_len)
     {
         *p_code_err = MET_EOF_DURING_READING_ERR;
         return NULL;
     }
 
-    Node_t* root = ScanOneNode();
+    return GetG();
 }
 
 
-#define MOVE_FILE_BUF_PTR_ MoveToNextBracket(&func_op_name)
-
-static Node_t* ScanOneNode()
+static void SyntaxError(const char* file_name, const char* func_name, const int line_number)
 {
-    if (file_buffer[file_buf_idx] == '(')
-        ++file_buffer;
-
-    else
-    {
-        CALL_SYNTAX_ERR;
-    }
-
-
-    double  number        = 0;
-    Node_t* left_subtree  = NULL;
-    Node_t* right_subtree = NULL;
-
-    if (*file_buffer == '(')
-    {
-        left_subtree = ScanOneNode();
-    }
-
-    else if (sscanf(file_buffer, "%lg", number) != 0)
-        return _NUM(number);
-
-    else
-    {
-        char func_op_name[MAX_FUNC_NAME_LEN] = {};
-        sscanf(file_buffer, "%[^()]", func_op_name);
-
-        if (strcmp(func_op_name, "") == 0)
-        {
-            CALL_SYNTAX_ERR;
-        }
-
-        else if (strcmp(func_op_name, EXP_STR) == 0)
-        {
-            MoveToNextBracket(&func_op_name);
-            left_subtree = _EXP(ScanOneNode);
-        }
-
-        else if (strcmp(func_op_name, SIN_STR) == 0)
-        {
-            MoveToNextBracket(&func_op_name);
-            left_subtree = _SIN(ScanOneNode);
-        }
-
-        else if (strcmp(func_op_name, COS_STR) == 0)
-        {
-            MoveToNextBracket(&func_op_name);
-            left_subtree = _COS(ScanOneNode);
-        }
-    }
-
-    if (*file_buffer == '+' || *file_buffer == '-' || *file_buffer == '*' || *file_buffer == '/')
-    {
-
-    }
-
-
-    if (*file_buffer == ')')
-    {
-        ++file_buffer;
-        MoveToNextBracket(&file_buffer);
-    }
-
-    else
-    {
-        CALL_SYNTAX_ERR;
-    }
-
-    // Node_t* left_node = ScanOneNode();
-
-    // char cur_op = file_buffer[file_buf_idx];
-    // switch(cur_op)
-    // {
-    //     case '+':
-    //         Node_t* cur_node = _ADD(left_node, ScanOneNode());
-
-    //     case '-':
-    //         Node_t* cur_node = _SUB(left_node, ScanOneNode());
-
-    //     case '*':
-    //         Node_t* cur_node = _MUL(left_node, ScanOneNode());
-
-    //     case '/':
-    //         Node_t* cur_node = _DIV(left_node, ScanOneNode());
-
-    //     case '^':
-    //         Node_t* cur_node = _POW(left_node, ScanOneNode());
-    // }
-}
-
-#undef MOVE_FILE_BUF_PTR_
-
-
-static CodeError SyntaxError(const char* file_name, const char* func_name, const int line_number)
-{
-    printf(RED "FATAL ERROR:     file: %s    func: %s    line: %d    \n"
-           MAG "        unknown char (char = %c, pointer = %d) was met during scanning formula from text file",
+    printf(RED "FATAL ERROR:     in file: %s    in func: %s    in line: %d\n"
+               "        syntax error: (char = %d, pointer = %d) was met during scanning formula from text file" WHT "\n",
            file_name, func_name, line_number,
-           file_buffer[file_buf_idx], file_buf_idx);
+           file_buffer[p], p);
 
-    return FILE_READING_SYNTAX_ERR;
+    exit(FILE_READING_SYNTAX_ERR);
+}
+
+
+static void UnknownFuncError(const char* file_name, const char* code_func_name,
+                             const int line_number, const char* algebr_func_name)
+{
+    printf(RED "FATAL ERROR:     in file: %s    in func: %s    in line: %d\n"
+               "        unknown function (%s) was met during scanning formula from text file" WHT "\n",
+           file_name, code_func_name, line_number,
+           algebr_func_name);
+
+    exit(MET_UNKNOWN_FUNC_ERR);
 }

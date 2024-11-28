@@ -25,9 +25,6 @@ Node_t* DiffNode(Node_t* node)
 }
 
 
-#define DIFF_OF_COMPOSITION_(__result_op__)                             \
-    _MUL(_##__result_op__(TreeCpy(node->left)), DiffNode(node->left))   \
-
 static Node_t* DiffOp(Node_t* node)
 {
     switch(node->value.value_op)
@@ -40,8 +37,7 @@ static Node_t* DiffOp(Node_t* node)
 
         case MUL:
         {
-            return  _ADD
-                        (
+            return  _ADD(
                         _MUL(DiffNode(node->left), TreeCpy(node->right)),
                         _MUL(TreeCpy(node->left), DiffNode(node->right))
                         );
@@ -49,10 +45,8 @@ static Node_t* DiffOp(Node_t* node)
 
         case DIV:
         {
-            return  _DIV
-                        (
-                        _SUB
-                            (
+            return  _DIV(
+                        _SUB(
                             _MUL(DiffNode(node->left), TreeCpy(node->right)),
                             _MUL(TreeCpy(node->left), DiffNode(node->right))
                             ),
@@ -65,16 +59,70 @@ static Node_t* DiffOp(Node_t* node)
         }
 
         case EXP:
-            return DIFF_OF_COMPOSITION_(EXP);
+            return _MUL(_EXP(TreeCpy(node->left)), DiffNode(node->left));
 
         case LN:
-            return _MUL(DiffNode(node->left), _DIV(_NUM(1), TreeCpy(node->left)));
+            return _DIV(DiffNode(node->left), TreeCpy(node->left));
 
-        case POW: /* РЫДАТЬ */
+        case POW:
+        {
+            bool var_in_base  = CheckTreeForVars(node->left);
+            bool var_in_power = CheckTreeForVars(node->right);
+
+            if (var_in_base && var_in_power)
+            {
+                return  _MUL(
+                            TreeCpy(node),
+                            _ADD(
+                                _MUL(
+                                    DiffNode(node->right),
+                                    _LN(TreeCpy(node->left))
+                                    ),
+                                _MUL(
+                                    TreeCpy(node->right),
+                                    DiffNode(_LN(TreeCpy(node->left)))
+                                    )
+                                )
+                            );
+            }
+
+            else if (var_in_base)
+            {
+                return  _MUL(
+                            DiffNode(node->left),
+                            _MUL(
+                                TreeCpy(node->right),
+                                _POW(
+                                    TreeCpy(node->left),
+                                    _SUB(
+                                        TreeCpy(node->right),
+                                        _NUM(1)
+                                        )
+                                    )
+                                )
+                            );
+            }
+
+            else if (var_in_power)
+            {
+                return  _MUL(
+                            DiffNode(node->right),
+                            _MUL(
+                                _LN(TreeCpy(node->left)),
+                                _POW(
+                                    TreeCpy(node->left),
+                                    TreeCpy(node->right)
+                                    )
+                                )
+                            );
+            }
+
+            break;
+        }
 
         default:
             return NULL;
     }
-}
 
-#undef DIFF_OF_COMPOSITION_
+    return NULL;
+}
