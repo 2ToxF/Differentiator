@@ -12,8 +12,11 @@ INC_DIR := include
 OBJ_DIR := object
 LOG_DIR := logs
 
+INC_SDIR1 := $(INC_DIR)/common
+INC_SDIR2 := $(INC_DIR)/special
+
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
-INCLUDES := $(wildcard $(INC_DIR)/*.h)
+INCLUDES := $(wildcard $(INC_SDIR1)/*.h) $(wildcard $(INC_SDIR2)/*.h)
 OBJECTS := $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 EXE := Differentiator.exe
 
@@ -28,7 +31,7 @@ $(EXE): $(OBJECTS)
 	@$(CC) $(OBJECTS) -o $@
 
 $(OBJECTS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDES)
-	@$(CC) -c $(DED_FLAGS) $(ADD_FLAGS) -I$(INC_DIR) $< -o $@
+	@$(CC) -c $(DED_FLAGS) $(ADD_FLAGS) -I$(INC_DIR) -I$(INC_SDIR1) -I$(INC_SDIR2) $< -o $@
 
 $(LOG_DIR):
 	@mkdir $@

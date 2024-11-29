@@ -31,7 +31,7 @@ CodeError RunProgram()
     Node_t* diff_tree = DiffNode(root);
     TreeDump(diff_tree);
 
-    // SimplifyTree(diff_tree, &code_err);
+    SimplifyTree(diff_tree, &code_err);
     TreeDump(diff_tree);
 
     DumpClose();

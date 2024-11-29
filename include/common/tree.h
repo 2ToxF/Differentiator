@@ -62,7 +62,7 @@ enum TreeElemType
     OP,
 };
 
-enum OpType
+enum OpersAndFuncs
 {
     ADD,
     SUB,
@@ -83,6 +83,12 @@ enum OpType
 
     ARCSH, ARCCH,
     ARCTH, ARCCTH,
+};
+
+enum OpFuncType
+{
+    OPERATION,
+    FUNCTION,
 };
 
 typedef union

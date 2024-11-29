@@ -7,6 +7,7 @@
 
 static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err);
 static void NodeCpy          (Node_t* node_dest, Node_t* node_src);
+static void SetNodeConstValue(Node_t* node, double new_value);
 static void NullifyNode      (Node_t* node);
 
 
@@ -62,24 +63,24 @@ static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 }
 
 
-Node_t* NewNode(TreeElemType elem_type, double elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
+Node_t* NewNode(TreeElemType node_type, double node_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
 {
     Node_t* new_node = (Node_t*) calloc(1, sizeof(Node_t));
 
-    new_node->type  = elem_type;
+    new_node->type  = node_type;
 
-    switch(elem_type)
+    switch(node_type)
     {
         case CONST:
-            new_node->value.value_const = (double) elem_value;
+            new_node->value.value_const = (double) node_value;
             break;
 
         case VAR:
-            new_node->value.value_var = (char) elem_value;
+            new_node->value.value_var = (char) node_value;
             break;
 
         case OP:
-            new_node->value.value_op = (char) elem_value;
+            new_node->value.value_op = (char) node_value;
             break;
 
         default:
@@ -108,18 +109,27 @@ static void NodeCpy(Node_t* node_dest, Node_t* node_src)
 }
 
 
-static void NullifyNode(Node_t* node)
+static void SetNodeConstValue(Node_t* node, double new_value)
 {
     node->type = CONST;
-    node->value.value_const = 0;
+    node->value.value_const = new_value;
 
     TreeDtor(node->left); node->left = NULL;
     TreeDtor(node->right); node->right = NULL;
 }
 
 
+static void NullifyNode(Node_t* node)
+{
+    SetNodeConstValue(node, 0);
+}
+
+
 #define DO_OP_WITH_ONE_CONST_(__const_node__, __nonconst_node__)                                            \
-    if (node->value.value_op == MUL && IsZero(node->__const_node__->value.value_const))                     \
+    if (node->value.value_op == POW && IsZero(node->__const_node__->value.value_const))                     \
+        SetNodeConstValue(node, 1);                                                                         \
+                                                                                                            \
+    else if (node->value.value_op == MUL && IsZero(node->__const_node__->value.value_const))                \
         NullifyNode(node);                                                                                  \
                                                                                                             \
     else if ((node->value.value_op == MUL || node->value.value_op == DIV) &&                                \
@@ -209,5 +219,11 @@ Node_t* TreeCpy(Node_t* node_src)
     if (node_src == NULL)
         return NULL;
 
-    return NewNode(node_src->type, node_src->value.value_const, TreeCpy(node_src->left), TreeCpy(node_src->right));
+    if (node_src->type == CONST)
+        return NewNode(node_src->type, node_src->value.value_const,
+                       TreeCpy(node_src->left), TreeCpy(node_src->right));
+
+    else
+        return NewNode(node_src->type, (double) node_src->value.value_var,
+                       TreeCpy(node_src->left), TreeCpy(node_src->right));
 }

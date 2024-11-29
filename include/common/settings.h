@@ -1,7 +1,7 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
-#define FORMULAS_DIR "Formulas/"
+#define FORMULAS_DIR "formulas/"
 
 const char* const EXP_STR = "exp";
 const char* const LN_STR  = "ln";
