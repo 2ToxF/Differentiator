@@ -29,13 +29,13 @@ Node_t* DiffNode(Node_t* node)
 }
 
 
-#define DEF_OP(__op_name__, __code__, ...)               \
-    case __op_name__:                                    \
-        {__code__}                                       \
+#define DEF_OP(__op_name__, __code_for_diff__, ...)                 \
+    case __op_name__:                                               \
+        {__code_for_diff__}                                         \
         break;
 
-#define DEF_OP_ONE_ARG(__op_name__, __code__, ...)       \
-    DEF_OP(__op_name__, __code__, __VA_ARGS__)
+#define DEF_OP_ONE_ARG(__op_name__, __code_for_diff__, ...)         \
+    DEF_OP(__op_name__, __code_for_diff__, __VA_ARGS__)
 
 static Node_t* DiffOp(Node_t* node)
 {

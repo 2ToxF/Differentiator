@@ -136,17 +136,11 @@ static void SetNodeConstValue(Node_t* node, double new_value)
     else if (node->value.value_op == MUL && IsZero(node->__const_node__->value.value_const))                \
         NullifyNode(node);                                                                                  \
                                                                                                             \
-    else if ((node->value.value_op == MUL || node->value.value_op == DIV) &&                                \
-             IsEqual(node->__const_node__->value.value_const, 1))                                           \
-    {                                                                                                       \
+    else if (node->value.value_op == MUL && IsEqual(node->__const_node__->value.value_const, 1))            \
         NodeCpy(node, node->__nonconst_node__);                                                             \
-    }                                                                                                       \
                                                                                                             \
-    else if ((node->value.value_op == ADD || node->value.value_op == SUB) &&                                \
-                IsZero(node->__const_node__->value.value_const))                                            \
-    {                                                                                                       \
-        NodeCpy(node, node->__nonconst_node__);                                                             \
-    }
+    else if (node->value.value_op == ADD && IsZero(node->__const_node__->value.value_const))                \
+        NodeCpy(node, node->__nonconst_node__);
 
 bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 {
@@ -175,13 +169,19 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 
                 else if (node->left->type == CONST)
                 {
-                    if (node->value.value_op == DIV && IsZero(node->left->value.value_const))
+                    if (node->value.value_op == SUB && IsZero(node->left->value.value_const))
+                    {
+                        node->value.value_op          = MUL;
+                        node->left->value.value_const = -1;
+                    }
+
+                    else if (node->value.value_op == DIV && IsZero(node->left->value.value_const))
                         NullifyNode(node);
 
                     else if (node->value.value_op == POW && IsEqual(node->left->value.value_const, 1))
                         SetNodeConstValue(node, 1);
 
-                    else if (node->value.value_op == POW && IsEqual(node->left->value.value_const, 0))
+                    else if (node->value.value_op == POW && IsZero(node->left->value.value_const))
                     {
                         if (node->right->type == CONST && node->right->value.value_op <= 0)
                         {
@@ -198,7 +198,10 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 
                 else if (node->right->type == CONST)
                 {
-                    if (node->value.value_op == DIV && IsZero(node->right->value.value_const))
+                    if (node->value.value_op == SUB && IsZero(node->right->value.value_const))
+                        NodeCpy(node, node->left);
+
+                    else if (node->value.value_op == DIV && IsZero(node->right->value.value_const))
                     {
                         *p_code_err = ZERO_DIVISION_ERR;
                         return false;
@@ -207,10 +210,11 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
                     else if (node->value.value_op == POW && IsEqual(node->right->value.value_const, 1))
                         NodeCpy(node, node->left);
 
-                    else if (node->value.value_op == POW && IsEqual(node->right->value.value_const, 0))
-                    {
+                    else if (node->value.value_op == POW && IsZero(node->right->value.value_const))
                         SetNodeConstValue(node, 1);
-                    }
+
+                    else if (node->value.value_op == DIV && IsEqual(node->right->value.value_const, 1))
+                        NodeCpy(node, node->left);
 
                     DO_OP_WITH_ONE_CONST_(right, left);
                 }

@@ -11,6 +11,7 @@ SRC_DIR := source
 INC_DIR := include
 OBJ_DIR := object
 LOG_DIR := logs
+TEX_DIR := tex_files
 
 INC_SDIR2 := $(INC_DIR)/codegeneration
 INC_SDIR1 := $(INC_DIR)/common
@@ -22,7 +23,10 @@ EXE := Differentiator.exe
 
 DOCS_NAME := Docs_config
 
-all: $(OBJ_DIR) $(EXE)
+all: $(TEX_DIR) $(OBJ_DIR) $(EXE)
+
+$(TEX_DIR):
+	@mkdir $@
 
 $(OBJ_DIR):
 	@mkdir $@

@@ -3,6 +3,6 @@
 
 #include "tree.h"
 
-void TexTree(Node_t* root);
+CodeError MakePdfWithFormulas();
 
 #endif

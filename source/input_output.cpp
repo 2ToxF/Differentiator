@@ -52,9 +52,12 @@ void PrintCodeError(CodeError code_error)
         ERR_DESCR_(MET_EOF_DURING_READING_ERR);
         ERR_DESCR_(MET_UNKNOWN_FUNC_ERR);
 
+        ERR_DESCR_(UNKNOWN_NODE_VALUE_TYPE_ERR);
         ERR_DESCR_(ZERO_DIVISION_ERR);
         ERR_DESCR_(ZERO_TO_NONPOS_POWER_ERR);
-        ERR_DESCR_(UNKNOWN_NODE_VALUE_TYPE_ERR);
+
+        ERR_DESCR_(SYSTEM_CALL_ERR);
+        ERR_DESCR_(TEX_TO_NULL_PTR_ERR);
 
         default:
             printf("\n\n" RED "CODE_ERROR: UNKNOWN_ERROR" WHT "\n");
