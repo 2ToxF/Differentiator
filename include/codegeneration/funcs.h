@@ -1,23 +1,14 @@
-DEF_OP_ONE_ARG(EXP, 1, FUNCTION,
+DEF_OP_ONE_ARG(EXP,
 {
     return _MUL(_EXP(TreeCpy(node->left)), DiffNode(node->left));
 })
 
-DEF_OP_ONE_ARG(LN, 1, FUNCTION,
+DEF_OP_ONE_ARG(LN,
 {
     return _DIV(DiffNode(node->left), TreeCpy(node->left));
 })
 
-DEF_OP(POW, 2, FUNCTION,
-{
-    Node_t* new_diff_node = DiffPow(node);
-    if (new_diff_node != NULL)
-        return new_diff_node;
-
-    break;
-})
-
-DEF_OP(LOG, 2, FUNCTION,
+DEF_OP(LOG,
 {
     Node_t* transformed_node = _DIV(_LN(node->right), _LN(node->left));
     Node_t* new_diff_node    = DiffNode(transformed_node);
@@ -28,7 +19,7 @@ DEF_OP(LOG, 2, FUNCTION,
 
 /// ---------------------------------------------------------------------------------------------------------
 
-DEF_OP_ONE_ARG(SIN, 1, FUNCTION,
+DEF_OP_ONE_ARG(SIN,
 {
     return  _MUL(
                 DiffNode(node->left),
@@ -36,7 +27,7 @@ DEF_OP_ONE_ARG(SIN, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(COS, 1, FUNCTION,
+DEF_OP_ONE_ARG(COS,
 {
     return  _MUL(
                 _NUM(-1),
@@ -47,7 +38,7 @@ DEF_OP_ONE_ARG(COS, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(TAN, 1, FUNCTION,
+DEF_OP_ONE_ARG(TAN,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -58,7 +49,7 @@ DEF_OP_ONE_ARG(TAN, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(CTG, 1, FUNCTION,
+DEF_OP_ONE_ARG(CTG,
 {
     return _DIV(
                 _MUL(
@@ -74,7 +65,7 @@ DEF_OP_ONE_ARG(CTG, 1, FUNCTION,
 
 /// ---------------------------------------------------------------------------------------------------------
 
-DEF_OP_ONE_ARG(SH, 1, FUNCTION,
+DEF_OP_ONE_ARG(SH,
 {
     return  _MUL(
                 DiffNode(node->left),
@@ -82,7 +73,7 @@ DEF_OP_ONE_ARG(SH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(CH, 1, FUNCTION,
+DEF_OP_ONE_ARG(CH,
 {
     return  _MUL(
                 DiffNode(node->left),
@@ -90,7 +81,7 @@ DEF_OP_ONE_ARG(CH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(TH, 1, FUNCTION,
+DEF_OP_ONE_ARG(TH,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -101,7 +92,7 @@ DEF_OP_ONE_ARG(TH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(CTH, 1, FUNCTION,
+DEF_OP_ONE_ARG(CTH,
 {
     return  _DIV(
                 _MUL(
@@ -117,7 +108,7 @@ DEF_OP_ONE_ARG(CTH, 1, FUNCTION,
 
 /// ---------------------------------------------------------------------------------------------------------
 
-DEF_OP_ONE_ARG(ARCSIN, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCSIN,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -134,7 +125,7 @@ DEF_OP_ONE_ARG(ARCSIN, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCCOS, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCCOS,
 {
     return  _DIV(
                 _MUL(
@@ -154,7 +145,7 @@ DEF_OP_ONE_ARG(ARCCOS, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCTAN, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCTAN,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -168,7 +159,7 @@ DEF_OP_ONE_ARG(ARCTAN, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCCTG, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCCTG,
 {
     return  _DIV(
                 _MUL(
@@ -187,7 +178,7 @@ DEF_OP_ONE_ARG(ARCCTG, 1, FUNCTION,
 
 /// ---------------------------------------------------------------------------------------------------------
 
-DEF_OP_ONE_ARG(ARCSH, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCSH,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -204,7 +195,7 @@ DEF_OP_ONE_ARG(ARCSH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCCH, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCCH,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -221,7 +212,7 @@ DEF_OP_ONE_ARG(ARCCH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCTH, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCTH,
 {
     return  _DIV(
                 DiffNode(node->left),
@@ -235,7 +226,7 @@ DEF_OP_ONE_ARG(ARCTH, 1, FUNCTION,
                 );
 })
 
-DEF_OP_ONE_ARG(ARCCTH, 1, FUNCTION,
+DEF_OP_ONE_ARG(ARCCTH,
 {
     return  _DIV(
                 DiffNode(node->left),

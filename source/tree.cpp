@@ -7,14 +7,17 @@
 
 static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err);
 static void NodeCpy          (Node_t* node_dest, Node_t* node_src);
-static void SetNodeConstValue(Node_t* node, double new_value);
 static void NullifyNode      (Node_t* node);
+static void SetNodeConstValue(Node_t* node, double new_value);
 
 
 bool CheckTreeForVars(Node_t* node)
 {
     if (node == NULL)
         return false;
+
+    if (node->type == VAR)
+        return true;
 
     if (CheckTreeForVars(node->left) == true)
         return true;
@@ -101,11 +104,21 @@ static void NodeCpy(Node_t* node_dest, Node_t* node_src)
 
     Node_t* left_son_ptr = node_dest->left;
     node_dest->left = node_src->left;
-    free(left_son_ptr);
+
+    if (node_src != left_son_ptr)
+        TreeDtor(left_son_ptr);
 
     Node_t* right_son_ptr = node_dest->right;
     node_dest->right = node_src->right;
-    free(right_son_ptr);
+
+    if (node_src != right_son_ptr)
+        TreeDtor(right_son_ptr);
+}
+
+
+static void NullifyNode(Node_t* node)
+{
+    SetNodeConstValue(node, 0);
 }
 
 
@@ -119,16 +132,7 @@ static void SetNodeConstValue(Node_t* node, double new_value)
 }
 
 
-static void NullifyNode(Node_t* node)
-{
-    SetNodeConstValue(node, 0);
-}
-
-
 #define DO_OP_WITH_ONE_CONST_(__const_node__, __nonconst_node__)                                            \
-    if (node->value.value_op == POW && IsZero(node->__const_node__->value.value_const))                     \
-        SetNodeConstValue(node, 1);                                                                         \
-                                                                                                            \
     else if (node->value.value_op == MUL && IsZero(node->__const_node__->value.value_const))                \
         NullifyNode(node);                                                                                  \
                                                                                                             \
@@ -173,6 +177,22 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
                 {
                     if (node->value.value_op == DIV && IsZero(node->left->value.value_const))
                         NullifyNode(node);
+
+                    else if (node->value.value_op == POW && IsEqual(node->left->value.value_const, 1))
+                        SetNodeConstValue(node, 1);
+
+                    else if (node->value.value_op == POW && IsEqual(node->left->value.value_const, 0))
+                    {
+                        if (node->right->type == CONST && node->right->value.value_op <= 0)
+                        {
+                            *p_code_err = ZERO_TO_NONPOS_POWER_ERR;
+                            return false;
+                        }
+
+                        else
+                            NullifyNode(node);
+                    }
+
                     DO_OP_WITH_ONE_CONST_(left, right);
                 }
 
@@ -183,6 +203,15 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
                         *p_code_err = ZERO_DIVISION_ERR;
                         return false;
                     }
+
+                    else if (node->value.value_op == POW && IsEqual(node->right->value.value_const, 1))
+                        NodeCpy(node, node->left);
+
+                    else if (node->value.value_op == POW && IsEqual(node->right->value.value_const, 0))
+                    {
+                        SetNodeConstValue(node, 1);
+                    }
+
                     DO_OP_WITH_ONE_CONST_(right, left);
                 }
 
@@ -203,17 +232,6 @@ bool SimplifyTree(Node_t* node, CodeError* p_code_err)
 #undef DO_OP_WITH_ONE_CONST_
 
 
-void TreeDtor(Node_t* node)
-{
-    if (node->left != NULL)
-        TreeDtor(node->left);
-    if (node->right != NULL)
-        TreeDtor(node->right);
-
-    free(node);
-}
-
-
 Node_t* TreeCpy(Node_t* node_src)
 {
     if (node_src == NULL)
@@ -226,4 +244,15 @@ Node_t* TreeCpy(Node_t* node_src)
     else
         return NewNode(node_src->type, (double) node_src->value.value_var,
                        TreeCpy(node_src->left), TreeCpy(node_src->right));
+}
+
+
+void TreeDtor(Node_t* node)
+{
+    if (node->left != NULL)
+        TreeDtor(node->left);
+    if (node->right != NULL)
+        TreeDtor(node->right);
+
+    free(node);
 }

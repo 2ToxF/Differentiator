@@ -91,81 +91,23 @@ static void DumpDotNode(FILE* dot_file, Node_t* node, Node_t* prev_node, NodesRe
         {
             switch (node->value.value_op)
             {
-                case ADD:
-                    fprintf(dot_file, "\tp%p[label=\"+\", fillcolor=\"darkmagenta\", fontcolor=\"white\"];\n", node);
-                    break;
+                #define DEF_OP(__op_name__, ...)                                                                        \
+                    case __op_name__:                                                                                   \
+                        fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"darkmagenta\", fontcolor=\"white\"];\n",     \
+                                node, __op_name__##_STR);                                                               \
+                        break;
+                #include "operations.h"
+                #undef DEF_OP
 
-                case SUB:
-                    fprintf(dot_file, "\tp%p[label=\"-\", fillcolor=\"darkmagenta\", fontcolor=\"white\"];\n", node);
-                    break;
-
-                case MUL:
-                    fprintf(dot_file, "\tp%p[label=\"*\", fillcolor=\"darkmagenta\", fontcolor=\"white\"];\n", node);
-                    break;
-
-                case DIV:
-                    fprintf(dot_file, "\tp%p[label=\"/\", fillcolor=\"darkmagenta\", fontcolor=\"white\"];\n", node);
-                    break;
-
-                case EXP:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, EXP_STR);
-                    break;
-
-                case LN:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, LN_STR);
-                    break;
-
-                case POW:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, POW_STR);
-                    break;
-
-                case LOG:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, LOG_STR);
-                    break;
-
-                case SIN:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, SIN_STR);
-                    break;
-
-                case COS:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, COS_STR);
-                    break;
-
-                case TAN:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, TAN_STR);
-                    break;
-
-                case CTG:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, CTG_STR);
-                    break;
-
-                case SH:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, SH_STR);
-                    break;
-
-                case CH:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, CH_STR);
-                    break;
-
-                case TH:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, TH_STR);
-                    break;
-
-                case CTH:
-                    fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",
-                            node, CTH_STR);
-                    break;
+                #define DEF_OP(__op_name__, ...)                                                                        \
+                    case __op_name__:                                                                                   \
+                        fprintf(dot_file, "\tp%p[label=\"%s\", fillcolor=\"chartreuse\", fontcolor=\"black\"];\n",      \
+                                node, __op_name__##_STR);                                                               \
+                        break;
+                #define DEF_OP_ONE_ARG(__op_name__, ...) DEF_OP(__op_name__)
+                #include "funcs.h"
+                #undef DEF_OP
+                #undef DEF_OP_ONE_ARG
 
                 default:
                     break;

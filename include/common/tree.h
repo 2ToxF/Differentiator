@@ -15,15 +15,14 @@
 #define _VAR(__char__)   NewNode(VAR,   (int) __char__,  NULL, NULL)
 
 /// Create node with operations (and functions)
-#define _ADD(__left_son__, __right_son__) NewNode(OP, ADD, __left_son__, __right_son__)
+#define _ADD(__left_son__, __right_son__) NewNode(OP, ADD, __left_son__, __right_son__)  // Вопрос: можно ли убрать копипаст тут?
 #define _SUB(__left_son__, __right_son__) NewNode(OP, SUB, __left_son__, __right_son__)
 #define _MUL(__left_son__, __right_son__) NewNode(OP, MUL, __left_son__, __right_son__)
 #define _DIV(__left_son__, __right_son__) NewNode(OP, DIV, __left_son__, __right_son__)
+#define _POW(__left_son__, __right_son__) NewNode(OP, POW, __left_son__, __right_son__)
 
 #define _EXP(__left_son__)                NewNode(OP, EXP, __left_son__, NULL)
 #define _LN(__left_son__)                 NewNode(OP, LN,  __left_son__, NULL)
-
-#define _POW(__left_son__, __right_son__) NewNode(OP, POW, __left_son__, __right_son__)
 #define _LOG(__left_son__, __right_son__) NewNode(OP, LOG, __left_son__, __right_son__)
 
 #define _SIN(__left_son__) NewNode(OP, SIN, __left_son__, NULL)
@@ -62,34 +61,20 @@ enum TreeElemType
     OP,
 };
 
-enum OpersAndFuncs
+
+#define DEF_OP(__op_name__, ...) \
+    __op_name__,
+#define DEF_OP_ONE_ARG(__op_name__, ...) DEF_OP(__op_name__)
+
+enum OperationsAndFuncs
 {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-
-    EXP, LN,
-    POW, LOG,
-
-    SIN, COS,
-    TAN, CTG,
-
-    SH, CH,
-    TH, CTH,
-
-    ARCSIN, ARCCOS,
-    ARCTAN, ARCCTG,
-
-    ARCSH, ARCCH,
-    ARCTH, ARCCTH,
+    #include "opers_and_funcs.h"
 };
 
-enum OpFuncType
-{
-    OPERATION,
-    FUNCTION,
-};
+#undef DEF_OP
+#undef DEF_OP_ONE_ARG
+
+/// -----------------------------------------------------------------------------------------------------------
 
 typedef union
 {
@@ -111,7 +96,7 @@ struct Node_t
 
 bool    CheckTreeForVars (Node_t* node);
 Node_t* NewNode          (TreeElemType elem_type, double elem_value,
-                          Node_t* left_son_ptr, Node_t* right_son_ptr);
+                          Node_t* left_son_ptr, Node_t* right_son_ptr);  // Вопрос: можно ли передавать через union, а не double?
 bool    SimplifyTree     (Node_t* node, CodeError* p_code_err);
 Node_t* TreeCpy          (Node_t* node_src);
 void    TreeDtor         (Node_t* node);

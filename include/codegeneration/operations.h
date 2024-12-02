@@ -1,14 +1,14 @@
-DEF_OP(ADD, 2, OPERATION,
+DEF_OP(ADD,
 {
     return _ADD(DiffNode(node->left), DiffNode(node->right));
 })
 
-DEF_OP(SUB, 2, OPERATION,
+DEF_OP(SUB,
 {
     return _SUB(DiffNode(node->left), DiffNode(node->right));
 })
 
-DEF_OP(MUL, 2, OPERATION,
+DEF_OP(MUL,
 {
     return  _ADD(
                 _MUL(DiffNode(node->left), TreeCpy(node->right)),
@@ -16,7 +16,7 @@ DEF_OP(MUL, 2, OPERATION,
                 );
 })
 
-DEF_OP(DIV, 2, OPERATION,
+DEF_OP(DIV,
 {
     return  _DIV(
                 _SUB(
@@ -29,4 +29,13 @@ DEF_OP(DIV, 2, OPERATION,
                     _NUM(2)
                     )
                 );
+})
+
+DEF_OP(POW,
+{
+    Node_t* new_diff_node = DiffPow(node);
+    if (new_diff_node != NULL)
+        return new_diff_node;
+
+    break;
 })

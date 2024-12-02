@@ -12,8 +12,8 @@ INC_DIR := include
 OBJ_DIR := object
 LOG_DIR := logs
 
+INC_SDIR2 := $(INC_DIR)/codegeneration
 INC_SDIR1 := $(INC_DIR)/common
-INC_SDIR2 := $(INC_DIR)/special
 
 SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 INCLUDES := $(wildcard $(INC_SDIR1)/*.h) $(wildcard $(INC_SDIR2)/*.h)

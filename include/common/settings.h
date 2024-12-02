@@ -3,9 +3,14 @@
 
 #define FORMULAS_DIR "formulas/"
 
+const char* const ADD_STR = "+";
+const char* const SUB_STR = "-";
+const char* const MUL_STR = "*";
+const char* const DIV_STR = "/";
+const char* const POW_STR = "^";
+
 const char* const EXP_STR = "exp";
 const char* const LN_STR  = "ln";
-const char* const POW_STR = "pow";
 const char* const LOG_STR = "log";
 
 const char* const SIN_STR = "sin";
@@ -41,6 +46,7 @@ enum CodeError
     MET_UNKNOWN_FUNC_ERR,
 
     ZERO_DIVISION_ERR,
+    ZERO_TO_NONPOS_POWER_ERR,
     UNKNOWN_NODE_VALUE_TYPE_ERR,
 };
 

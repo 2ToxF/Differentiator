@@ -10,7 +10,7 @@
 #include "utils.h"
 
 #define CALL_SYNTAX_ERR \
-    { SyntaxError(__FILE__, __PRETTY_FUNCTION__, __LINE__); }
+    do { SyntaxError(__FILE__, __PRETTY_FUNCTION__, __LINE__); } while(0)
 
 static const int MAX_FUNC_NAME_LEN = 10;
 
@@ -141,7 +141,7 @@ static Node_t* GetS()
 }
 
 
-static Node_t* GetV()
+static Node_t* GetV()  // Вопрос: костыль или не костыль?
 {
     int old_p = p;
     char func_or_var_name[MAX_FUNC_NAME_LEN] = {};
@@ -192,7 +192,7 @@ static Node_t* GetF(const char* func_name)
 }
 
 
-static Node_t* GetN()  // TODO: make double
+static Node_t* GetN()  // TODO: make double and negative numbers
 {
     int val = 0;
     int old_p = p;
@@ -214,10 +214,10 @@ static Node_t* GetN()  // TODO: make double
 
 static Node_t* GetFuncNode(const char* algebr_func_name, Node_t* first_arg, Node_t* second_arg)
 {
-    #define DEF_OP(__op_name__, __args_num__, __op_type__, ...)                     \
-        if (strcmp(algebr_func_name, __op_name__##_STR) == 0)                       \
+    #define DEF_OP(__op_name__, ...)                                            \
+        if (strcmp(algebr_func_name, __op_name__##_STR) == 0)                   \
             return _##__op_name__(first_arg, second_arg);
-    #define DEF_OP_ONE_ARG(__op_name__, __args_num__, __op_type__, ...)
+    #define DEF_OP_ONE_ARG(__op_name__, ...)
 
     if (second_arg != NULL && first_arg != NULL)
     {
@@ -228,9 +228,9 @@ static Node_t* GetFuncNode(const char* algebr_func_name, Node_t* first_arg, Node
     #undef DEF_OP_ONE_ARG
 
 
-    #define DEF_OP(__op_name__, __args_num__, __op_type__, ...)
-    #define DEF_OP_ONE_ARG(__op_name__, __args_num__, __op_type__, ...)             \
-            if (strcmp(algebr_func_name, __op_name__##_STR) == 0)                   \
+    #define DEF_OP(__op_name__, ...)
+    #define DEF_OP_ONE_ARG(__op_name__, ...)                                    \
+            if (strcmp(algebr_func_name, __op_name__##_STR) == 0)               \
                 return _##__op_name__(first_arg);
 
     else if (first_arg != NULL)
@@ -245,9 +245,6 @@ static Node_t* GetFuncNode(const char* algebr_func_name, Node_t* first_arg, Node
     UnknownFuncError(__FILE__, __PRETTY_FUNCTION__, __LINE__, algebr_func_name);
     return NULL;
 }
-
-#undef DEF_OP_ONE_ARG
-#undef DEF_OP
 
 
 Node_t* ScanFormulaFromFile(const char* file_name, CodeError* p_code_err)

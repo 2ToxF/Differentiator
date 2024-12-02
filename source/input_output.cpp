@@ -53,6 +53,7 @@ void PrintCodeError(CodeError code_error)
         ERR_DESCR_(MET_UNKNOWN_FUNC_ERR);
 
         ERR_DESCR_(ZERO_DIVISION_ERR);
+        ERR_DESCR_(ZERO_TO_NONPOS_POWER_ERR);
         ERR_DESCR_(UNKNOWN_NODE_VALUE_TYPE_ERR);
 
         default:
