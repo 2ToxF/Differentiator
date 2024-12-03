@@ -62,16 +62,41 @@ static CodeError MakeTexWithFormulas()
         CHECK_AND_CALL_ERR_;
     }
 
-    fprintf(tex_file_ptr, "Эу, пацан! Пойди сюда...\n"
-                          "\n"
-                          "Сегодня я хотел бы обсудить с тобой очень важную в математическом анализе тему: \\underline{ПРОИЗВОДНАЯ}. "
-                          "Давай начнём с нескольких простых табличных примеров:\n"
-                          "\n");
+    PRINTF_TO_TEX_("Дорогие читатели, это глава пятая (5), часть первая (1) дневника моих похождений по матану.\n"
+                   "\n"
+                   "Сегодня я хотел бы обсудить с вами очень важную в математическом анализе тему: \\underline{ПРОИЗВОДНАЯ}. "
+                   "Давайте начнём с нескольких простых табличных примеров:\n"
+                   "\n");
 
     for (int i = 0; i < COMMON_FORMULAS_NUMBER; ++i)
     {
         SCAN_DIFF_TEX_FORMULA_;
     }
+
+    PRINTF_TO_TEX_("Так, теперь, когда вы разобрались с основой устройства языка Fortran, а также поняли, что такое интеграл, "
+                   "предлагаю рассмотреть более интересные случаи применения формулы Ньютона-Лейбница:\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Я надеюсь, вам всё понятно? Отлично [растянутое 'o'], тогда продолжаем.\n\n"
+                   "Теперь нам необходимо разобраться с теоремой Больцано-Коши. Она формулируется так:\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Давайте докажем её? Начнём с очевидного тождества:\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Из этого следует такое равенство:\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Его можно упростить:\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Попробуем упростить ещё? Что ж, отличная идея!\n");
+    SCAN_DIFF_TEX_FORMULA_;
+
+    PRINTF_TO_TEX_("Теперь теорема Лагранжа о среднем доказана! Я вас поздравляю!\n\n"
+                   "Однако рано радоваться, поскольку нам требуется раскрыть ещё одну великую тайну!!!\n\n"
+                   "Загадка следующая: почему следующее равенство не является опровержением Великой теоремы Ферма?");
+    SCAN_DIFF_TEX_FORMULA_;
 
     return TexEndAndClose();
 }
@@ -86,17 +111,17 @@ static CodeError ScanDiffTexFormula()
     SimplifyTree(func_tree, &code_err);
     CHECK_AND_CALL_ERR_;
 
-    fprintf(tex_file_ptr, "\\begin{equation}\n"
-                        "(");
+    PRINTF_TO_TEX_("\\begin{equation}\n"
+                          "(");
     TexTree(func_tree);
-    fprintf(tex_file_ptr, ")_{x}^{'} = ");
+    PRINTF_TO_TEX_(")_{x}^{'} = ");
 
     Node_t* diff_func_tree = DiffNode(func_tree);
     SimplifyTree(diff_func_tree, &code_err);
     CHECK_AND_CALL_ERR_;
     TexTree(diff_func_tree);
 
-    fprintf(tex_file_ptr, "\n\\end{equation}\n\n");
+    PRINTF_TO_TEX_("\n\\end{equation}\n\n");
 
     return code_err;
 }
@@ -107,7 +132,7 @@ static CodeError TexEndAndClose()
     if (tex_file_ptr == NULL)
         return TEX_TO_NULL_PTR_ERR;
 
-    fprintf(tex_file_ptr, "\n\\end{document}\n");
+    PRINTF_TO_TEX_("\n\\end{document}\n");
 
     fclose(tex_file_ptr); tex_file_ptr = NULL;
 
@@ -125,22 +150,22 @@ static CodeError TexHeader()
         CHECK_AND_CALL_ERR_;
     }
 
-    fprintf(tex_file_ptr, "\\documentclass[12pt, a4paper]{article}\n"
-                          "\\usepackage[margin=1in]{geometry}\n"
-                          "\\usepackage{mathtext}\n"
-                          "\\usepackage[T2A]{fontenc}\n"
-                          "\\usepackage[utf8]{inputenc}\n"
-                          "\\usepackage{amsmath, amssymb}\n"
-                          "\\usepackage[english, russian]{babel}\n"
-                          "\n"
-                          "\\title{Differentiator By Antonio Tox(a)icity}\n"
-                          "\\author{Antonio Tox(a)icity}\n"
-                          "\n"
-                          "\\begin{document}\n"
-                          "\\maketitle\n"
-                          "\\setlength{\\parindent}{0pt}\n"
-                          "\\large\n"
-                          "\n");
+    PRINTF_TO_TEX_("\\documentclass[12pt, a4paper]{article}\n"
+                   "\\usepackage[margin=1in]{geometry}\n"
+                   "\\usepackage{mathtext}\n"
+                   "\\usepackage[T2A]{fontenc}\n"
+                   "\\usepackage[utf8]{inputenc}\n"
+                   "\\usepackage{amsmath, amssymb}\n"
+                   "\\usepackage[english, russian]{babel}\n"
+                   "\n"
+                   "\\title{Differentiator By Antonio Tox(a)icity}\n"
+                   "\\author{Antonio Tox(a)icity}\n"
+                   "\n"
+                   "\\begin{document}\n"
+                   "\\maketitle\n"
+                   "\\setlength{\\parindent}{0pt}\n"
+                   "\\large\n"
+                   "\n");
 
     return code_err;
 }
