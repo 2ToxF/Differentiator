@@ -27,5 +27,5 @@ log(x^1+x^0,x^2+x^1+x^0)
 sh(ch(4/x))^20
 exp(exp(exp(exp(exp(3*x)))))
 exp(3^x*4^(1/x))
-1
+log(10,10)
 arccos(th(ln(2)))

@@ -97,7 +97,7 @@ struct Node_t
 bool    CheckTreeForVars (Node_t* node);
 Node_t* NewNode          (TreeElemType elem_type, double elem_value,
                           Node_t* left_son_ptr, Node_t* right_son_ptr);  // Вопрос: можно ли передавать через union, а не double?
-bool    SimplifyTree     (Node_t* node, CodeError* p_code_err);
+void    SimplifyTree     (Node_t* node, CodeError* p_code_err);
 Node_t* TreeCpy          (Node_t* node_src);
 void    TreeDtor         (Node_t* node);
 
