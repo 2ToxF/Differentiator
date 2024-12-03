@@ -1,8 +1,6 @@
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
 
-#define FORMULAS_DIR "formulas/"
-
 const char* const ADD_STR = "+";
 const char* const SUB_STR = "-";
 const char* const MUL_STR = "*";
@@ -49,7 +47,7 @@ enum CodeError
     ZERO_DIVISION_ERR,
     ZERO_TO_NONPOS_POWER_ERR,
 
-    SYSTEM_CALL_ERR,
+    TEX_SYSTEM_CALL_ERR,
     TEX_TO_NULL_PTR_ERR,
 };
 

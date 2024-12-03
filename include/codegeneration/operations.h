@@ -80,17 +80,27 @@ DEF_OP(POW,
     break;
 },
 {
-    if (node->left->type != CONST && node->left->type != VAR)
+    if (node->right->type == CONST && IsEqual(node->right->value.value_const, 0.5))
     {
-        PRINTF_TO_TEX_("(");
+        PRINTF_TO_TEX_("\\sqrt{");
         TexTree(node->left);
-        PRINTF_TO_TEX_(")");
+        PRINTF_TO_TEX_("}");
     }
 
     else
-        TexTree(node->left);
+    {
+        if (node->left->type == OP)
+        {
+            PRINTF_TO_TEX_("(");
+            TexTree(node->left);
+            PRINTF_TO_TEX_(")");
+        }
 
-    PRINTF_TO_TEX_("^{");
-    TexTree(node->right);
-    PRINTF_TO_TEX_("}");
+        else
+            TexTree(node->left);
+
+        PRINTF_TO_TEX_("^{");
+        TexTree(node->right);
+        PRINTF_TO_TEX_("}");
+    }
 })

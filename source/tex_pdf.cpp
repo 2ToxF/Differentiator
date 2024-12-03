@@ -5,9 +5,9 @@
 #include "differentiator.h"
 #include "formula_scanner.h"
 #include "input_output.h"
-#include "tree_dump.h"
-#include "tree_tex.h"
+#include "tex_pdf.h"
 #include "tree.h"
+#include "utils.h"
 
 #define CHECK_AND_CALL_ERR_                             \
     if (code_err != NO_ERR)                             \
@@ -16,16 +16,20 @@
 #define PRINTF_TO_TEX_(__format__, ...)                 \
     fprintf(tex_file_ptr, __format__, ##__VA_ARGS__)
 
-#define TEX_FILES_DIR "tex_files/"
-#define TEX_FILE_NAME TEX_FILES_DIR "Differentiator By Antonio Tox(a)icity.tex"
+#define SCAN_DIFF_TEX_FORMULA_                          \
+    code_err = ScanDiffTexFormula();                    \
+    CHECK_AND_CALL_ERR_
 
-static const char* const INPUT_FILE_WITH_FORMULAS = FORMULAS_DIR "formulas.txt";
+#define TEX_AUX_FILES_DIR "tex_aux_files/"
+#define TEX_FILE_NAME TEX_AUX_FILES_DIR "Differentiator By Antonio Tox(a)icity.tex"
+
+static const char* const INPUT_FILE_WITH_FORMULAS = "formulas.txt";
 static const int         COMMON_FORMULAS_NUMBER   = 24;
 
 FILE* tex_file_ptr = NULL;
-// Сохраню пока здесь: pdflatex -output-directory=tex_files -aux-directory=tex_aux_files -quiet "tex_files/Differentiator By Antonio Tox(a)icity.tex"
 
 static CodeError MakeTexWithFormulas();
+static CodeError ScanDiffTexFormula ();
 static CodeError TexEndAndClose     ();
 static CodeError TexHeader          ();
 static CodeError TexOpen            (const char* file_name);
@@ -37,9 +41,9 @@ CodeError MakePdfWithFormulas()
     CodeError code_err = MakeTexWithFormulas();
     CHECK_AND_CALL_ERR_;
 
-    if (system("pdflatex -output-directory=" TEX_FILES_DIR " -aux-directory=tex_aux_files -quiet "
+    if (system("pdflatex -aux-directory=" TEX_AUX_FILES_DIR " -quiet "
                "\"" TEX_FILE_NAME "\"") != 0)
-        return SYSTEM_CALL_ERR;
+        return TEX_SYSTEM_CALL_ERR;
 
     return code_err;
 }
@@ -66,29 +70,35 @@ static CodeError MakeTexWithFormulas()
 
     for (int i = 0; i < COMMON_FORMULAS_NUMBER; ++i)
     {
-        Node_t* func_tree = ScanFormulaFromFile(INPUT_FILE_WITH_FORMULAS, &code_err);
-
-        fprintf(tex_file_ptr, "\\begin{equation}\n"
-                              "(");
-
-        TexTree(func_tree);
-        SimplifyTree(func_tree, &code_err);
-        // TreeDump(func_tree);
-
-        fprintf(tex_file_ptr, ")_{x}^{'} = ");
-
-        Node_t* diff_func_tree = DiffNode(func_tree);
-        SimplifyTree(diff_func_tree, &code_err);
-        // TreeDump(diff_func_tree);
-        TexTree(diff_func_tree);
-
-        fprintf(tex_file_ptr, "\n\\end{equation}\n\n");
-
-        // DumpClose();
-        // getchar();
+        SCAN_DIFF_TEX_FORMULA_;
     }
 
     return TexEndAndClose();
+}
+
+
+static CodeError ScanDiffTexFormula()
+{
+    CodeError code_err = NO_ERR;
+
+    Node_t* func_tree = ScanFormulaFromFile(INPUT_FILE_WITH_FORMULAS, &code_err);
+    CHECK_AND_CALL_ERR_;
+    SimplifyTree(func_tree, &code_err);
+    CHECK_AND_CALL_ERR_;
+
+    fprintf(tex_file_ptr, "\\begin{equation}\n"
+                        "(");
+    TexTree(func_tree);
+    fprintf(tex_file_ptr, ")_{x}^{'} = ");
+
+    Node_t* diff_func_tree = DiffNode(func_tree);
+    SimplifyTree(diff_func_tree, &code_err);
+    CHECK_AND_CALL_ERR_;
+    TexTree(diff_func_tree);
+
+    fprintf(tex_file_ptr, "\n\\end{equation}\n\n");
+
+    return code_err;
 }
 
 
@@ -162,12 +172,10 @@ static void TexTree(Node_t* node)
     switch(node->type)
     {
         case CONST:
-            // printf("NOW I PRINT CONSTANT\n");
             PRINTF_TO_TEX_("%lg", node->value.value_const);
             break;
 
         case VAR:
-            // printf("NOW I PRINT VARIABLE\n");
             PRINTF_TO_TEX_("%c", node->value.value_var);
             break;
 

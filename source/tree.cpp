@@ -1,5 +1,6 @@
 #include "settings.h" // !!!
 
+#include <math.h>
 #include <stdlib.h>
 
 #include "tree.h"
@@ -40,6 +41,10 @@ static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
             node->value.value_const = node->left->value.value_const - node->right->value.value_const;
             break;
 
+        case MUL:
+            node->value.value_const = node->left->value.value_const * node->right->value.value_const;
+            break;
+
         case DIV:
         {
             if (IsZero(node->right->value.value_const))
@@ -52,8 +57,8 @@ static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
             break;
         }
 
-        case MUL:
-            node->value.value_const = node->left->value.value_const * node->right->value.value_const;
+        case POW:
+            node->value.value_const = pow(node->left->value.value_const, node->right->value.value_const);
             break;
 
         default:

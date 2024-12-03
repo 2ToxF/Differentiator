@@ -56,7 +56,7 @@ void PrintCodeError(CodeError code_error)
         ERR_DESCR_(ZERO_DIVISION_ERR);
         ERR_DESCR_(ZERO_TO_NONPOS_POWER_ERR);
 
-        ERR_DESCR_(SYSTEM_CALL_ERR);
+        ERR_DESCR_(TEX_SYSTEM_CALL_ERR);
         ERR_DESCR_(TEX_TO_NULL_PTR_ERR);
 
         default:

@@ -1,7 +1,7 @@
 #include "settings.h" // !!!
 
 #include "input_output.h"
-#include "tree_tex.h"
+#include "tex_pdf.h"
 
 int main()
 {

@@ -11,7 +11,7 @@ SRC_DIR := source
 INC_DIR := include
 OBJ_DIR := object
 LOG_DIR := logs
-TEX_DIR := tex_files
+TEX_DIR := tex_aux_files
 
 INC_SDIR2 := $(INC_DIR)/codegeneration
 INC_SDIR1 := $(INC_DIR)/common
@@ -56,3 +56,6 @@ clean_exe:
 
 clean_logs: $(LOG_DIR)
 	rm $(LOG_DIR)/*
+
+clean_tex: $(TEX_DIR)
+	rm $(TEX_DIR)/*
