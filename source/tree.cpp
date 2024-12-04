@@ -31,10 +31,7 @@ bool CheckTreeForVars(Node_t* node)
 
 static void DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 {
-    if (node->value.value_op != LOG)
-        node->type = CONST;
-
-    switch(node->value.value_op)
+    switch((char) node->value.value_op)
     {
         case ADD:
             node->value.value_const = node->left->value.value_const + node->right->value.value_const;
@@ -61,6 +58,7 @@ static void DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
         }
 
         case POW:
+        {
             if (node->left->value.value_const <= 0)
             {
                 *p_code_err = ZERO_TO_NONPOS_POWER_ERR;
@@ -69,42 +67,55 @@ static void DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 
             node->value.value_const = pow(node->left->value.value_const, node->right->value.value_const);
             break;
+        }
 
         default:
             return;
     }
 
+    node->type = CONST;
     TreeDtor(node->left); node->left = NULL;
     TreeDtor(node->right); node->right = NULL;
 }
 
 
-Node_t* NewNode(TreeElemType node_type, double node_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
+Node_t* NewNodeConst(double elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
 {
     Node_t* new_node = (Node_t*) calloc(1, sizeof(Node_t));
 
-    new_node->type  = node_type;
-
-    switch(node_type)
-    {
-        case CONST:
-            new_node->value.value_const = (double) node_value;
-            break;
-
-        case VAR:
-            new_node->value.value_var = (char) node_value;
-            break;
-
-        case OP:
-            new_node->value.value_op = (char) node_value;
-            break;
-
-        default:
-            return NULL;
-    }
-
+    new_node->type  = CONST;
     new_node->left  = left_son_ptr;
     new_node->right = right_son_ptr;
+
+    new_node->value.value_const = elem_value;
+
+    return new_node;
+}
+
+
+Node_t* NewNodeOp(OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
+{
+    Node_t* new_node = (Node_t*) calloc(1, sizeof(Node_t));
+
+    new_node->type  = OP;
+    new_node->left  = left_son_ptr;
+    new_node->right = right_son_ptr;
+
+    new_node->value.value_op = elem_value;
+
+    return new_node;
+}
+
+
+Node_t* NewNodeVar(char elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr)
+{
+    Node_t* new_node = (Node_t*) calloc(1, sizeof(Node_t));
+
+    new_node->type  = VAR;
+    new_node->left  = left_son_ptr;
+    new_node->right = right_son_ptr;
+
+    new_node->value.value_var = elem_value;
 
     return new_node;
 }
@@ -252,13 +263,20 @@ Node_t* TreeCpy(Node_t* node_src)
     if (node_src == NULL)
         return NULL;
 
-    if (node_src->type == CONST)
-        return NewNode(node_src->type, node_src->value.value_const,
-                       TreeCpy(node_src->left), TreeCpy(node_src->right));
+    switch (node_src->type)
+    {
+        case CONST:
+            return NewNodeConst(node_src->value.value_const, TreeCpy(node_src->left), TreeCpy(node_src->right));
 
-    else
-        return NewNode(node_src->type, (double) node_src->value.value_var,
-                       TreeCpy(node_src->left), TreeCpy(node_src->right));
+        case VAR:
+            return NewNodeVar(node_src->value.value_var, TreeCpy(node_src->left), TreeCpy(node_src->right));
+
+        case OP:
+            return NewNodeOp(node_src->value.value_op, TreeCpy(node_src->left), TreeCpy(node_src->right));
+
+        default:
+            return NULL;
+    }
 }
 
 
