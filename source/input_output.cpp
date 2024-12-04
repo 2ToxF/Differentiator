@@ -16,7 +16,10 @@ CodeError MyFread(char** input_buffer, int* input_buffer_length, const char* inp
 
     FILE* input_fptr = fopen(input_file_name, "rb");
     if (input_fptr == NULL)
+    {
+        printf(RED "ERROR: can't open file \"%s\"" WHT "\n", input_file_name);
         return FILE_NOT_OPENED_ERR;
+    }
 
     if ((code_err = Fsize(input_file_name, input_buffer_length)) != NO_ERR)
         return code_err;
@@ -57,7 +60,7 @@ void PrintCodeError(CodeError code_error)
         ERR_DESCR_(ZERO_TO_NONPOS_POWER_ERR);
 
         ERR_DESCR_(TEX_SYSTEM_CALL_ERR);
-        ERR_DESCR_(TEX_TO_NULL_PTR_ERR);
+        ERR_DESCR_(PRINT_TO_NULL_PTR_ERR);
 
         default:
             printf("\n\n" RED "CODE_ERROR: UNKNOWN_ERROR" WHT "\n");

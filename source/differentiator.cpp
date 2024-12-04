@@ -6,8 +6,8 @@
 // #include "tree_dump.h"
 #include "tree.h"
 
-static Node_t* DiffOp (Node_t* node);
-static Node_t* DiffPow(Node_t* node);
+static Node_t* DiffOp  (Node_t* node);
+static Node_t* DiffPow (Node_t* node);
 
 
 Node_t* DiffNode(Node_t* node)

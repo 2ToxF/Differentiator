@@ -9,31 +9,30 @@
 #include "tree.h"
 #include "utils.h"
 
-#define CHECK_AND_CALL_ERR_                             \
-    if (code_err != NO_ERR)                             \
+#define CHECK_AND_CALL_ERR_ \
+    if (code_err != NO_ERR) \
         return code_err
 
-#define PRINTF_TO_TEX_(__format__, ...)                 \
+#define PRINTF_TO_TEX_(__format__, ...) \
     fprintf(tex_file_ptr, __format__, ##__VA_ARGS__)
 
-#define SCAN_DIFF_TEX_FORMULA_                          \
-    code_err = ScanDiffTexFormula();                    \
+#define SCAN_DIFF_TEX_FORMULA_                                                              \
+    code_err = ScanDiffTexFormula(tex_file_ptr, formulas_file_buffer, &file_buffer_idx);    \
     CHECK_AND_CALL_ERR_
 
 #define TEX_AUX_FILES_DIR "tex_aux_files/"
 #define TEX_FILE_NAME TEX_AUX_FILES_DIR "Differentiator By Antonio Tox(a)icity.tex"
 
-static const char* const INPUT_FILE_WITH_FORMULAS = "formulas.txt";
-static const int         COMMON_FORMULAS_NUMBER   = 24;
+static const char* const INPUT_FILE_WITH_FORMULAS_NAME = "formulas_for_pdf.txt";
+static const int         COMMON_FORMULAS_NUMBER        = 24;
 
-FILE* tex_file_ptr = NULL;
-
-static CodeError MakeTexWithFormulas();
-static CodeError ScanDiffTexFormula ();
-static CodeError TexEndAndClose     ();
-static CodeError TexHeader          ();
-static CodeError TexOpen            (const char* file_name);
-static void      TexTree            (Node_t* node);
+static CodeError MakeTexWithFormulas ();
+static CodeError ScanDiffTexFormula  (FILE* tex_file_ptr, const char* const formulas_file_buffer,
+                                      int* file_buffer_idx);
+static CodeError TexEndAndClose      (FILE** p_tex_file_ptr);
+static CodeError TexHeader           (FILE*  tex_file_ptr);
+static CodeError TexOpen             (FILE** p_tex_file_ptr, const char* file_name);
+static void      TexTree             (FILE*  tex_file_ptr, Node_t* node);
 
 
 CodeError MakePdfWithFormulas()
@@ -53,14 +52,25 @@ static CodeError MakeTexWithFormulas()
 {
     CodeError code_err = NO_ERR;
 
+    FILE* tex_file_ptr = fopen(TEX_FILE_NAME, "w");
     if (tex_file_ptr == NULL)
     {
-        code_err = TexOpen(TEX_FILE_NAME);
-        CHECK_AND_CALL_ERR_;
-
-        code_err = TexHeader();
-        CHECK_AND_CALL_ERR_;
+        printf(RED "ERROR: can't open file \"%s\"" WHT "\n", TEX_FILE_NAME);
+        return FILE_NOT_OPENED_ERR;
     }
+
+    char* formulas_file_buffer = NULL;
+    int   formulas_buffer_len  = 0;
+    int   file_buffer_idx      = 0;
+
+    code_err = MyFread(&formulas_file_buffer, &formulas_buffer_len, INPUT_FILE_WITH_FORMULAS_NAME);
+    CHECK_AND_CALL_ERR_;
+
+    code_err = TexOpen(&tex_file_ptr, TEX_FILE_NAME);
+    CHECK_AND_CALL_ERR_;
+
+    code_err = TexHeader(tex_file_ptr);
+    CHECK_AND_CALL_ERR_;
 
     PRINTF_TO_TEX_("Дорогие читатели, это глава пятая (5), часть первая (1) дневника моих похождений по матану.\n"
                    "\n"
@@ -98,28 +108,31 @@ static CodeError MakeTexWithFormulas()
                    "Загадка следующая: почему следующее равенство не является опровержением Великой теоремы Ферма?\n");
     SCAN_DIFF_TEX_FORMULA_;
 
-    return TexEndAndClose();
+    return TexEndAndClose(&tex_file_ptr);
 }
 
 
-static CodeError ScanDiffTexFormula()
+static CodeError ScanDiffTexFormula(FILE* tex_file_ptr, const char* const formulas_file_buffer,
+                                    int* file_buffer_idx)
 {
     CodeError code_err = NO_ERR;
 
-    Node_t* func_tree = ScanFormulaFromFile(INPUT_FILE_WITH_FORMULAS, &code_err);
-    CHECK_AND_CALL_ERR_;
+    if (tex_file_ptr == NULL)
+        return PRINT_TO_NULL_PTR_ERR;
+
+    Node_t* func_tree = GetFormulaTree(formulas_file_buffer, file_buffer_idx);
     SimplifyTree(func_tree, &code_err);
     CHECK_AND_CALL_ERR_;
 
     PRINTF_TO_TEX_("\\begin{equation}\n"
                           "(");
-    TexTree(func_tree);
+    TexTree(tex_file_ptr, func_tree);
     PRINTF_TO_TEX_(")_{x}^{'} = ");
 
     Node_t* diff_func_tree = DiffNode(func_tree);
     SimplifyTree(diff_func_tree, &code_err);
     CHECK_AND_CALL_ERR_;
-    TexTree(diff_func_tree);
+    TexTree(tex_file_ptr, diff_func_tree);
 
     PRINTF_TO_TEX_("\n\\end{equation}\n\n");
 
@@ -127,28 +140,25 @@ static CodeError ScanDiffTexFormula()
 }
 
 
-static CodeError TexEndAndClose()
+static CodeError TexEndAndClose(FILE** p_tex_file_ptr)
 {
+    FILE* tex_file_ptr = *p_tex_file_ptr;
+
     if (tex_file_ptr == NULL)
-        return TEX_TO_NULL_PTR_ERR;
+        return PRINT_TO_NULL_PTR_ERR;
 
     PRINTF_TO_TEX_("\n\\end{document}\n");
 
-    fclose(tex_file_ptr); tex_file_ptr = NULL;
+    fclose(tex_file_ptr); *p_tex_file_ptr = NULL;
 
     return NO_ERR;
 }
 
 
-static CodeError TexHeader()
+static CodeError TexHeader(FILE* tex_file_ptr)
 {
-    CodeError code_err = NO_ERR;
-
     if (tex_file_ptr == NULL)
-    {
-        code_err = TexOpen(TEX_FILE_NAME);
-        CHECK_AND_CALL_ERR_;
-    }
+        return PRINT_TO_NULL_PTR_ERR;
 
     PRINTF_TO_TEX_("\\documentclass[12pt, a4paper]{article}\n"
                    "\\usepackage[margin=1in]{geometry}\n"
@@ -167,14 +177,14 @@ static CodeError TexHeader()
                    "\\large\n"
                    "\n");
 
-    return code_err;
+    return NO_ERR;
 }
 
 
-static CodeError TexOpen(const char* file_name)
+static CodeError TexOpen(FILE** tex_file_ptr, const char* file_name)
 {
-    tex_file_ptr = fopen(file_name, "w");
-    if (tex_file_ptr == NULL)
+    *tex_file_ptr = fopen(file_name, "w");
+    if (*tex_file_ptr == NULL)
     {
         printf(RED "ERROR: can't open file %s" WHT "\n", file_name);
         return FILE_NOT_OPENED_ERR;
@@ -192,7 +202,7 @@ static CodeError TexOpen(const char* file_name)
 #define DEF_OP_ONE_ARG(__op_name__, __code_for_diff__, __code_for_tex__, ...)   \
     DEF_OP(__op_name__, __code_for_diff__, __code_for_tex__)
 
-static void TexTree(Node_t* node)
+static void TexTree(FILE* tex_file_ptr, Node_t* node)
 {
     switch(node->type)
     {
@@ -217,6 +227,9 @@ static void TexTree(Node_t* node)
             return;
     }
 }
+
+#undef DEF_OP_ONE_ARG
+#undef DEF_OP
 
 
 #undef PRINTF_TO_TEX_

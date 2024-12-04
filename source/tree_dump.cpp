@@ -19,11 +19,11 @@ static char dump_graph_file_name[MAX_FILE_NAME_LEN] = {};
 static int   dump_number    = 0;
 static FILE* dump_html_file_ptr = NULL;
 
-static void DumpDotHeader(FILE* dot_file);
-static void DumpDotFile  (Node_t* node);
-static void DumpDotNode  (FILE* dot_file, Node_t* node, Node_t* prev_node, NodesRelation tree_relation);
-static void DumpHtmlFile ();
-static void SystemCallDot();
+static void DumpDotHeader (FILE* dot_file);
+static void DumpDotFile   (Node_t* node);
+static void DumpDotNode   (FILE* dot_file, Node_t* node, Node_t* prev_node, NodesRelation tree_relation);
+static void DumpHtmlFile  ();
+static void SystemCallDot ();
 
 
 void DumpClose()

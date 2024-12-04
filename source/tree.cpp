@@ -8,10 +8,10 @@
 #include "tree.h"
 #include "utils.h"
 
-static void DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err);
-static void NodeCpy          (Node_t* node_dest, Node_t* node_src);
-static void NullifyNode      (Node_t* node);
-static void SetNodeConstValue(Node_t* node, double new_value);
+static void DoOpWithTwoConsts (Node_t* node, CodeError* p_code_err);
+static void NodeCpy           (Node_t* node_dest, Node_t* node_src);
+static void NullifyNode       (Node_t* node);
+static void SetNodeConstValue (Node_t* node, double new_value);
 
 
 bool CheckTreeForVars(Node_t* node)
@@ -162,6 +162,7 @@ void SimplifyTree(Node_t* node, CodeError* p_code_err)  // TODO: уменьши�
 
     SimplifyTree(node->left, p_code_err);
     SimplifyTree(node->right, p_code_err);
+
 
     if (*p_code_err != NO_ERR)
         return;

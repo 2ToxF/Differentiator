@@ -3,9 +3,9 @@ DEF_OP(ADD,
     return _ADD(DiffNode(node->left), DiffNode(node->right));
 },
 {
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(" + ");
-    TexTree(node->right);
+    TexTree(tex_file_ptr, node->right);
 })
 
 DEF_OP(SUB,
@@ -13,9 +13,9 @@ DEF_OP(SUB,
     return _SUB(DiffNode(node->left), DiffNode(node->right));
 },
 {
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(" - ");
-    TexTree(node->right);
+    TexTree(tex_file_ptr, node->right);
 })
 
 DEF_OP(MUL,
@@ -29,24 +29,24 @@ DEF_OP(MUL,
     if (node->left->type == OP && node->left->value.value_op <= SUB)
     {
         PRINTF_TO_TEX_("(");
-        TexTree(node->left);
+        TexTree(tex_file_ptr, node->left);
         PRINTF_TO_TEX_(")");
     }
 
     else
-        TexTree(node->left);
+        TexTree(tex_file_ptr, node->left);
 
     PRINTF_TO_TEX_(" \\cdot ");
 
     if (node->right->type == OP && node->right->value.value_op <= SUB)
     {
         PRINTF_TO_TEX_("(");
-        TexTree(node->right);
+        TexTree(tex_file_ptr, node->right);
         PRINTF_TO_TEX_(")");
     }
 
     else
-        TexTree(node->right);
+        TexTree(tex_file_ptr, node->right);
 })
 
 DEF_OP(DIV,
@@ -65,9 +65,9 @@ DEF_OP(DIV,
 },
 {
     PRINTF_TO_TEX_("\\frac{");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_("}{");
-    TexTree(node->right);
+    TexTree(tex_file_ptr, node->right);
     PRINTF_TO_TEX_("}");
 })
 
@@ -83,7 +83,7 @@ DEF_OP(POW,
     if (node->right->type == CONST && IsEqual(node->right->value.value_const, 0.5))
     {
         PRINTF_TO_TEX_("\\sqrt{");
-        TexTree(node->left);
+        TexTree(tex_file_ptr, node->left);
         PRINTF_TO_TEX_("}");
     }
 
@@ -92,15 +92,15 @@ DEF_OP(POW,
         if (node->left->type == OP)
         {
             PRINTF_TO_TEX_("(");
-            TexTree(node->left);
+            TexTree(tex_file_ptr, node->left);
             PRINTF_TO_TEX_(")");
         }
 
         else
-            TexTree(node->left);
+            TexTree(tex_file_ptr, node->left);
 
         PRINTF_TO_TEX_("^{");
-        TexTree(node->right);
+        TexTree(tex_file_ptr, node->right);
         PRINTF_TO_TEX_("}");
     }
 })

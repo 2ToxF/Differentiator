@@ -9,7 +9,7 @@
 #define _NUM(__number__) NewNode(CONST, __number__, NULL, NULL)
 
 /// Create node with common variables
-#define _X               NewNode(VAR,   (int) 'x',       NULL, NULL)
+#define _X               NewNode(VAR,   (int) 'x',       NULL, NULL) // TODO: wtf
 #define _Y               NewNode(VAR,   (int) 'y',       NULL, NULL)
 #define _Z               NewNode(VAR,   (int) 'z',       NULL, NULL)
 #define _VAR(__char__)   NewNode(VAR,   (int) __char__,  NULL, NULL)
@@ -76,12 +76,12 @@ enum OperationsAndFuncs
 
 /// -----------------------------------------------------------------------------------------------------------
 
-typedef union
+union TreeElemUnion
 {
     double value_const;
     char   value_var;
     char   value_op;
-} TreeElemUnion;
+};
 
 struct Node_t
 {

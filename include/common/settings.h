@@ -48,7 +48,7 @@ enum CodeError
     ZERO_TO_NONPOS_POWER_ERR,
 
     TEX_SYSTEM_CALL_ERR,
-    TEX_TO_NULL_PTR_ERR,
+    PRINT_TO_NULL_PTR_ERR,
 };
 
 #endif

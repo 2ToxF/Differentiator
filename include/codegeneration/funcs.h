@@ -4,7 +4,7 @@ DEF_OP_ONE_ARG(EXP,
 },
 {
     PRINTF_TO_TEX_("e^{");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_("}");
 })
 
@@ -14,7 +14,7 @@ DEF_OP_ONE_ARG(LN,
 },
 {
     PRINTF_TO_TEX_("ln(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -46,11 +46,11 @@ DEF_OP(LOG,
 },
 {
     PRINTF_TO_TEX_("log_{");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_("}");
 
     PRINTF_TO_TEX_("(");
-    TexTree(node->right);
+    TexTree(tex_file_ptr, node->right);
     PRINTF_TO_TEX_(")");
 })
 
@@ -65,7 +65,7 @@ DEF_OP_ONE_ARG(SIN,
 },
 {
     PRINTF_TO_TEX_("sin(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -81,7 +81,7 @@ DEF_OP_ONE_ARG(COS,
 },
 {
     PRINTF_TO_TEX_("cos(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -97,7 +97,7 @@ DEF_OP_ONE_ARG(TAN,
 },
 {
     PRINTF_TO_TEX_("tg(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -116,7 +116,7 @@ DEF_OP_ONE_ARG(CTG,
 },
 {
     PRINTF_TO_TEX_("ctg(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -131,7 +131,7 @@ DEF_OP_ONE_ARG(SH,
 },
 {
     PRINTF_TO_TEX_("sh(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -144,7 +144,7 @@ DEF_OP_ONE_ARG(CH,
 },
 {
     PRINTF_TO_TEX_("ch(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -160,7 +160,7 @@ DEF_OP_ONE_ARG(TH,
 },
 {
     PRINTF_TO_TEX_("th(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -179,7 +179,7 @@ DEF_OP_ONE_ARG(CTH,
 },
 {
     PRINTF_TO_TEX_("cth(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -203,7 +203,7 @@ DEF_OP_ONE_ARG(ARCSIN,
 },
 {
     PRINTF_TO_TEX_("arcsin(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -228,7 +228,7 @@ DEF_OP_ONE_ARG(ARCCOS,
 },
 {
     PRINTF_TO_TEX_("arccos(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -247,7 +247,7 @@ DEF_OP_ONE_ARG(ARCTAN,
 },
 {
     PRINTF_TO_TEX_("arctan(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -269,7 +269,7 @@ DEF_OP_ONE_ARG(ARCCTG,
 },
 {
     PRINTF_TO_TEX_("arcctg(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -293,7 +293,7 @@ DEF_OP_ONE_ARG(ARCSH,
 },
 {
     PRINTF_TO_TEX_("arcsh(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -315,7 +315,7 @@ DEF_OP_ONE_ARG(ARCCH,
 },
 {
     PRINTF_TO_TEX_("arcch(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -334,7 +334,7 @@ DEF_OP_ONE_ARG(ARCTH,
 },
 {
     PRINTF_TO_TEX_("arcth(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
 
@@ -353,6 +353,6 @@ DEF_OP_ONE_ARG(ARCCTH,
 },
 {
     PRINTF_TO_TEX_("arccth(");
-    TexTree(node->left);
+    TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })

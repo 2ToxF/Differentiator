@@ -3,6 +3,6 @@
 
 #include "tree.h"
 
-Node_t* ScanFormulaFromFile(const char* file_name, CodeError* p_code_err);
+Node_t* GetFormulaTree(const char* const file_buffer, int* p);
 
 #endif

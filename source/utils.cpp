@@ -28,10 +28,3 @@ bool IsZero(double x)
 {
     return IsEqual(x, 0);
 }
-
-
-void MoveToNextBracket(char** p_file_buffer)
-{
-    while (**p_file_buffer != '(' && **p_file_buffer != ')')
-        ++(*p_file_buffer);
-}
