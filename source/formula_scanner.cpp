@@ -137,7 +137,7 @@ static Node_t* GetStringNum(const char* const file_buffer, int* p)
 }
 
 
-static Node_t* GetVarFuncNode(const char* const file_buffer, int* p)  // Вопрос: костыль или не костыль?
+static Node_t* GetVarFuncNode(const char* const file_buffer, int* p)
 {
     int old_p = *p;
 

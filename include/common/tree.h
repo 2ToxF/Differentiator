@@ -15,7 +15,7 @@
 #define _VAR(__char__)   NewNodeVar(__char__,  NULL, NULL)
 
 /// Create node with operations (or functions)
-#define _ADD(__left_son__, __right_son__) NewNodeOp(ADD, __left_son__, __right_son__)  // Вопрос: можно ли убрать копипаст тут?
+#define _ADD(__left_son__, __right_son__) NewNodeOp(ADD, __left_son__, __right_son__)
 #define _SUB(__left_son__, __right_son__) NewNodeOp(SUB, __left_son__, __right_son__)
 #define _MUL(__left_son__, __right_son__) NewNodeOp(MUL, __left_son__, __right_son__)
 #define _DIV(__left_son__, __right_son__) NewNodeOp(DIV, __left_son__, __right_son__)
@@ -98,7 +98,8 @@ bool      CheckTreeForVars (Node_t* node);
 Node_t*   NewNodeConst     (double             elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
 Node_t*   NewNodeOp        (OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
 Node_t*   NewNodeVar       (char               elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-CodeError SimplifyTree     (Node_t* node);
+void      SimplifyTree     (Node_t* root, Node_t* node, SimplifyType simplify_type,
+                            FILE* tex_file_ptr, CodeError* p_code_err);
 Node_t*   TreeCpy          (Node_t* node_src);
 void      TreeDtor         (Node_t* node);
 

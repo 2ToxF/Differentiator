@@ -31,6 +31,12 @@ const char* const ARCCH_STR  = "arcch";
 const char* const ARCTH_STR  = "arcth";
 const char* const ARCCTH_STR = "arccth";
 
+enum SimplifyType
+{
+    WITH_TEX,
+    NO_TEX,
+};
+
 enum CodeError
 {
     NO_ERR,

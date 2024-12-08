@@ -5,7 +5,8 @@
 
 int main()
 {
-    CodeError code_err = MakePdfWithFormulas();
+    CodeError code_err = MakeCommonPdf();
+    // CodeError code_err = MakeSpecialPdf();
     PrintCodeError(code_err);
     return code_err;
 }

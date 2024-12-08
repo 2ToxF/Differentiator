@@ -3,6 +3,8 @@
 
 #include "tree.h"
 
-CodeError MakePdfWithFormulas();
+CodeError MakeCommonPdf   ();
+CodeError MakeSpecialPdf  ();
+void      TexTreeEquation (FILE*  tex_file_ptr, Node_t* node);
 
 #endif

@@ -4,16 +4,17 @@
 #include <stdlib.h>
 
 #include "differentiator.h"
+#include "tex_pdf.h"
 #include "tree_dump.h"
 #include "tree.h"
 #include "utils.h"
 
-static CodeError DoOpWithTwoConsts (Node_t* node);
+static bool      DoOpWithTwoConsts (Node_t* node, CodeError* p_code_err);
 static void      NodeCpy           (Node_t* node_dest, Node_t* node_src);
 static void      NullifyNode       (Node_t* node);
 static void      SetNodeConstValue (Node_t* node, double new_value);
-static CodeError SimplifyConstOne  (Node_t* node);
-static CodeError SimplifyConstZero (Node_t* node);
+static bool      SimplifyConstOne  (Node_t* node, CodeError* p_code_err);
+static bool      SimplifyConstZero (Node_t* node, CodeError* p_code_err);
 
 
 bool CheckTreeForVars(Node_t* node)
@@ -31,7 +32,7 @@ bool CheckTreeForVars(Node_t* node)
 }
 
 
-static CodeError DoOpWithTwoConsts(Node_t* node)
+static bool DoOpWithTwoConsts(Node_t* node, CodeError* p_code_err)
 {
     switch((char) node->value.value_op)
     {
@@ -50,7 +51,10 @@ static CodeError DoOpWithTwoConsts(Node_t* node)
         case DIV:
         {
             if (IsZero(node->right->value.value_const))
-                return ZERO_DIVISION_ERR;
+            {
+                *p_code_err = ZERO_DIVISION_ERR;
+                return false;
+            }
 
             node->value.value_const = node->left->value.value_const / node->right->value.value_const;
             break;
@@ -59,21 +63,24 @@ static CodeError DoOpWithTwoConsts(Node_t* node)
         case POW:
         {
             if (node->left->value.value_const <= 0)
-                return ZERO_TO_NONPOS_POWER_ERR;
+            {
+                *p_code_err = ZERO_TO_NONPOS_POWER_ERR;
+                return false;
+            }
 
             node->value.value_const = pow(node->left->value.value_const, node->right->value.value_const);
             break;
         }
 
         default:
-            return NO_ERR;
+            return false;
     }
 
     node->type = CONST;
     TreeDtor(node->left); node->left = NULL;
     TreeDtor(node->right); node->right = NULL;
 
-    return NO_ERR;
+    return true;
 }
 
 
@@ -154,7 +161,7 @@ static void SetNodeConstValue(Node_t* node, double new_value)
 }
 
 
-static CodeError SimplifyConstOne(Node_t* node)
+static bool SimplifyConstOne(Node_t* node, CodeError* /*p_code_err*/)
 {
     if (node->left->type == CONST)
     {
@@ -163,6 +170,9 @@ static CodeError SimplifyConstOne(Node_t* node)
 
         else if (node->value.value_op == POW)
             SetNodeConstValue(node, 1);
+
+        else
+            return false;
     }
 
     else if (node->right->type == CONST)
@@ -175,13 +185,19 @@ static CodeError SimplifyConstOne(Node_t* node)
 
         else if (node->value.value_op == POW)
             NodeCpy(node, node->left);
+
+        else
+            return false;
     }
 
-    return NO_ERR;
+    else
+        return false;
+
+    return true;
 }
 
 
-static CodeError SimplifyConstZero(Node_t* node)
+static bool SimplifyConstZero(Node_t* node, CodeError* p_code_err)
 {
     if (node->value.value_op == MUL)
         NullifyNode(node);
@@ -203,11 +219,17 @@ static CodeError SimplifyConstZero(Node_t* node)
         else if (node->value.value_op == POW)
         {
             if (node->right->type == CONST && node->right->value.value_const <= 0)
-                return ZERO_TO_NONPOS_POWER_ERR;
+            {
+                *p_code_err = ZERO_TO_NONPOS_POWER_ERR;
+                return false;
+            }
 
             else
                 NullifyNode(node);
         }
+
+        else
+            return false;
     }
 
     else if (node->right->type == CONST)
@@ -219,30 +241,40 @@ static CodeError SimplifyConstZero(Node_t* node)
             NodeCpy(node, node->left);
 
         else if (node->value.value_op == DIV)
-            return ZERO_DIVISION_ERR;
+        {
+            *p_code_err = ZERO_DIVISION_ERR;
+            return false;
+        }
 
         else if (node->value.value_op == POW)
             SetNodeConstValue(node, 1);
 
+        else
+            return false;
     }
 
-    return NO_ERR;
+    else
+        return false;
+
+    return true;
 }
 
 
-CodeError SimplifyTree(Node_t* node)
+void SimplifyTree(Node_t* root, Node_t* node, SimplifyType simplify_type,
+                  FILE* tex_file_ptr, CodeError* p_code_err)
 {
     if (node == NULL)
-        return NO_ERR;
+        return;
 
-    CodeError code_err = SimplifyTree(node->left);
-    if (code_err != NO_ERR)
-        return code_err;
+    SimplifyTree(root, node->left, simplify_type, tex_file_ptr, p_code_err);
+    if (*p_code_err != NO_ERR)
+        return;
 
-    code_err = SimplifyTree(node->right);
-    if (code_err != NO_ERR)
-        return code_err;
+    SimplifyTree(root, node->right, simplify_type, tex_file_ptr, p_code_err);
+    if (*p_code_err != NO_ERR)
+        return;
 
+    bool is_node_changed = false;
 
     switch (node->type)
     {
@@ -257,24 +289,24 @@ CodeError SimplifyTree(Node_t* node)
             if (node->left != NULL && node->right != NULL)
             {
                 if (node->left->type == CONST && node->right->type == CONST)
-                    return DoOpWithTwoConsts(node);
+                    is_node_changed = DoOpWithTwoConsts(node, p_code_err);
 
                 else if (node->left->type == CONST)
                 {
                     if (IsZero(node->left->value.value_const))
-                        return SimplifyConstZero(node);
+                        is_node_changed = SimplifyConstZero(node, p_code_err);
 
                     else if (IsEqual(node->left->value.value_const, 1))
-                        return SimplifyConstOne(node);
+                        is_node_changed = SimplifyConstOne(node, p_code_err);
                 }
 
                 else if (node->right->type == CONST)
                 {
                     if (IsZero(node->right->value.value_const))
-                        return SimplifyConstZero(node);
+                        is_node_changed = SimplifyConstZero(node, p_code_err);
 
                     else if (IsEqual(node->right->value.value_const, 1))
-                        return SimplifyConstOne(node);
+                        is_node_changed = SimplifyConstOne(node, p_code_err);
                 }
             }
 
@@ -282,10 +314,18 @@ CodeError SimplifyTree(Node_t* node)
         }
 
         default:
-            return UNKNOWN_NODE_VALUE_TYPE_ERR;
+            *p_code_err = UNKNOWN_NODE_VALUE_TYPE_ERR;
+            return;
     }
 
-    return NO_ERR;
+    if (simplify_type == WITH_TEX && is_node_changed)
+    {
+        if (tex_file_ptr == NULL)
+            *p_code_err = PRINT_TO_NULL_PTR_ERR;
+
+        else
+            TexTreeEquation(tex_file_ptr, root);
+    }
 }
 
 
