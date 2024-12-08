@@ -94,13 +94,13 @@ struct Node_t
 
 /// -----------------------------------------------------------------------------------------------------------
 
-bool    CheckTreeForVars (Node_t* node);
-Node_t* NewNodeConst     (double             elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-Node_t* NewNodeOp        (OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-Node_t* NewNodeVar       (char               elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-void    SimplifyTree     (Node_t* node, CodeError* p_code_err);
-Node_t* TreeCpy          (Node_t* node_src);
-void    TreeDtor         (Node_t* node);
+bool      CheckTreeForVars (Node_t* node);
+Node_t*   NewNodeConst     (double             elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+Node_t*   NewNodeOp        (OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+Node_t*   NewNodeVar       (char               elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+CodeError SimplifyTree     (Node_t* node);
+Node_t*   TreeCpy          (Node_t* node_src);
+void      TreeDtor         (Node_t* node);
 
 
 #endif

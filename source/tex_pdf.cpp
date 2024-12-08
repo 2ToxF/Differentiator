@@ -121,7 +121,7 @@ static CodeError ScanDiffTexFormula(FILE* tex_file_ptr, const char* const formul
         return PRINT_TO_NULL_PTR_ERR;
 
     Node_t* func_tree = GetFormulaTree(formulas_file_buffer, file_buffer_idx);
-    SimplifyTree(func_tree, &code_err);
+    code_err = SimplifyTree(func_tree);
     CHECK_AND_CALL_ERR_;
 
     PRINTF_TO_TEX_("\\begin{equation}\n"
@@ -130,7 +130,7 @@ static CodeError ScanDiffTexFormula(FILE* tex_file_ptr, const char* const formul
     PRINTF_TO_TEX_(")_{x}^{'} = ");
 
     Node_t* diff_func_tree = DiffNode(func_tree);
-    SimplifyTree(diff_func_tree, &code_err);
+    code_err = SimplifyTree(diff_func_tree);
     CHECK_AND_CALL_ERR_;
     TexTree(tex_file_ptr, diff_func_tree);
 

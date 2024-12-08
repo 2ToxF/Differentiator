@@ -196,7 +196,7 @@ static Node_t* GetArgsForFunc(const char* const file_buffer, int* p, const char*
 }
 
 
-static Node_t* GetNumber(const char* const file_buffer, int* p)  // TODO: make double and negative numbers
+static Node_t* GetNumber(const char* const file_buffer, int* p)
 {
     int val = 0;
     int old_p = *p;
