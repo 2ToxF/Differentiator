@@ -92,16 +92,28 @@ struct Node_t
     Node_t* right;
 };
 
+struct DataForSimplification
+{
+    Node_t* root;
+    Node_t* cur_node;
+
+    SimplifyType simplify_type;
+    FILE* tex_file_ptr;
+
+    CodeError* code_err;
+};
+
 /// -----------------------------------------------------------------------------------------------------------
 
-bool      CheckTreeForVars (Node_t* node);
-Node_t*   NewNodeConst     (double             elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-Node_t*   NewNodeOp        (OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-Node_t*   NewNodeVar       (char               elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
-void      SimplifyTree     (Node_t* root, Node_t* node, SimplifyType simplify_type,
-                            FILE* tex_file_ptr, CodeError* p_code_err);
-Node_t*   TreeCpy          (Node_t* node_src);
-void      TreeDtor         (Node_t* node);
+bool    CheckTreeForVar (Node_t* node, char var);
+
+Node_t* NewNodeConst    (double             elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+Node_t* NewNodeOp       (OperationsAndFuncs elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+Node_t* NewNodeVar      (char               elem_value, Node_t* left_son_ptr, Node_t* right_son_ptr);
+
+void    SimplifyTree    (DataForSimplification* simplify_data);
+Node_t* TreeCpy         (Node_t* node_src);
+void    TreeDtor        (Node_t* node);
 
 
 #endif

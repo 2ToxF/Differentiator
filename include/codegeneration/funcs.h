@@ -1,6 +1,6 @@
 DEF_OP_ONE_ARG(EXP,
 {
-    return _MUL(_EXP(TreeCpy(node->left)), DiffNode(node->left));
+    return _MUL(_EXP(TreeCpy(node->left)), DiffNode(node->left, var_diff_by));
 },
 {
     PRINTF_TO_TEX_("e^{");
@@ -10,7 +10,7 @@ DEF_OP_ONE_ARG(EXP,
 
 DEF_OP_ONE_ARG(LN,
 {
-    return _DIV(DiffNode(node->left), TreeCpy(node->left));
+    return _DIV(DiffNode(node->left, var_diff_by), TreeCpy(node->left));
 },
 {
     PRINTF_TO_TEX_("ln(");
@@ -23,7 +23,7 @@ DEF_OP(LOG,
     if (node->left->type == CONST)
     {
         Node_t* node_to_diff  = _LN(node->right);
-        Node_t* new_diff_node = DiffNode(node_to_diff);
+        Node_t* new_diff_node = DiffNode(node_to_diff, var_diff_by);
 
         free(node_to_diff); node_to_diff = NULL;
         return  _MUL(
@@ -38,7 +38,7 @@ DEF_OP(LOG,
     else
     {
         Node_t* transformed_node = _DIV(_LN(node->right), _LN(node->left));
-        Node_t* new_diff_node    = DiffNode(transformed_node);
+        Node_t* new_diff_node    = DiffNode(transformed_node, var_diff_by);
 
         free(transformed_node); transformed_node = NULL;
         return new_diff_node;
@@ -59,7 +59,7 @@ DEF_OP(LOG,
 DEF_OP_ONE_ARG(SIN,
 {
     return  _MUL(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _COS(TreeCpy(node->left))
                 );
 },
@@ -74,7 +74,7 @@ DEF_OP_ONE_ARG(COS,
     return  _MUL(
                 _NUM(-1),
                 _MUL(
-                    DiffNode(node->left),
+                    DiffNode(node->left, var_diff_by),
                     _SIN(TreeCpy(node->left))
                     )
                 );
@@ -88,7 +88,7 @@ DEF_OP_ONE_ARG(COS,
 DEF_OP_ONE_ARG(TAN,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _POW(
                     _COS(TreeCpy(node->left)),
                     _NUM(2)
@@ -96,7 +96,7 @@ DEF_OP_ONE_ARG(TAN,
                 );
 },
 {
-    PRINTF_TO_TEX_("tg(");
+    PRINTF_TO_TEX_("tan(");
     TexTree(tex_file_ptr, node->left);
     PRINTF_TO_TEX_(")");
 })
@@ -106,7 +106,7 @@ DEF_OP_ONE_ARG(CTG,
     return _DIV(
                 _MUL(
                     _NUM(-1),
-                    DiffNode(node->left)
+                    DiffNode(node->left, var_diff_by)
                     ),
                 _POW(
                     _SIN(TreeCpy(node->left)),
@@ -125,7 +125,7 @@ DEF_OP_ONE_ARG(CTG,
 DEF_OP_ONE_ARG(SH,
 {
     return  _MUL(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _CH(TreeCpy(node->left))
                 );
 },
@@ -138,7 +138,7 @@ DEF_OP_ONE_ARG(SH,
 DEF_OP_ONE_ARG(CH,
 {
     return  _MUL(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _SH(TreeCpy(node->left))
                 );
 },
@@ -151,7 +151,7 @@ DEF_OP_ONE_ARG(CH,
 DEF_OP_ONE_ARG(TH,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _POW(
                     _CH(TreeCpy(node->left)),
                     _NUM(2)
@@ -169,7 +169,7 @@ DEF_OP_ONE_ARG(CTH,
     return  _DIV(
                 _MUL(
                     _NUM(-1),
-                    DiffNode(node->left)
+                    DiffNode(node->left, var_diff_by)
                     ),
                 _POW(
                     _SH(TreeCpy(node->left)),
@@ -188,7 +188,7 @@ DEF_OP_ONE_ARG(CTH,
 DEF_OP_ONE_ARG(ARCSIN,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _POW(
                     _SUB(
                         _NUM(1),
@@ -212,7 +212,7 @@ DEF_OP_ONE_ARG(ARCCOS,
     return  _DIV(
                 _MUL(
                     _NUM(-1),
-                    DiffNode(node->left)
+                    DiffNode(node->left, var_diff_by)
                     ),
                 _POW(
                     _SUB(
@@ -235,7 +235,7 @@ DEF_OP_ONE_ARG(ARCCOS,
 DEF_OP_ONE_ARG(ARCTAN,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _ADD(
                     _NUM(1),
                     _POW(
@@ -256,7 +256,7 @@ DEF_OP_ONE_ARG(ARCCTG,
     return  _DIV(
                 _MUL(
                     _NUM(-1),
-                    DiffNode(node->left)
+                    DiffNode(node->left, var_diff_by)
                     ),
                 _ADD(
                     _NUM(1),
@@ -278,7 +278,7 @@ DEF_OP_ONE_ARG(ARCCTG,
 DEF_OP_ONE_ARG(ARCSH,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _POW(
                     _ADD(
                         _POW(
@@ -300,7 +300,7 @@ DEF_OP_ONE_ARG(ARCSH,
 DEF_OP_ONE_ARG(ARCCH,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _POW(
                     _SUB(
                         _POW(
@@ -322,7 +322,7 @@ DEF_OP_ONE_ARG(ARCCH,
 DEF_OP_ONE_ARG(ARCTH,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _SUB(
                     _NUM(1),
                     _POW(
@@ -341,7 +341,7 @@ DEF_OP_ONE_ARG(ARCTH,
 DEF_OP_ONE_ARG(ARCCTH,
 {
     return  _DIV(
-                DiffNode(node->left),
+                DiffNode(node->left, var_diff_by),
                 _SUB(
                     _NUM(1),
                     _POW(

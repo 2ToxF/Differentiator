@@ -1,3 +1,4 @@
 x^2
 3^x
 exp(exp(exp(exp(exp(3*x)))))
+tan(z*ctg(x))

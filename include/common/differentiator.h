@@ -3,6 +3,6 @@
 
 #include "tree.h"
 
-Node_t* DiffNode(Node_t* node);
+Node_t* DiffNode(Node_t* node, char var_diff_by);
 
 #endif

@@ -3,15 +3,17 @@
 #include <stdlib.h>
 
 #include "differentiator.h"
-// #include "tree_dump.h"
 #include "tree.h"
 
-static Node_t* DiffOp  (Node_t* node);
-static Node_t* DiffPow (Node_t* node);
+static Node_t* DiffOp  (Node_t* node, char var_diff_by);
+static Node_t* DiffPow (Node_t* node, char var_diff_by);
 
 
-Node_t* DiffNode(Node_t* node)
+Node_t* DiffNode(Node_t* node, char var_diff_by)
 {
+    if (!CheckTreeForVar(node, var_diff_by))
+        return _NUM(0);
+
     switch(node->type)
     {
         case CONST:
@@ -21,7 +23,7 @@ Node_t* DiffNode(Node_t* node)
             return _NUM(1);
 
         case OP:
-            return DiffOp(node);
+            return DiffOp(node, var_diff_by);
 
         default:
             return NULL;
@@ -37,8 +39,11 @@ Node_t* DiffNode(Node_t* node)
 #define DEF_OP_ONE_ARG(__op_name__, __code_for_diff__, ...)         \
     DEF_OP(__op_name__, __code_for_diff__, __VA_ARGS__)
 
-static Node_t* DiffOp(Node_t* node)
+static Node_t* DiffOp(Node_t* node, char var_diff_by)
 {
+    if (!CheckTreeForVar(node, var_diff_by))
+        return TreeCpy(node);
+
     switch(node->value.value_op)
     {
         #include "opers_and_funcs.h"
@@ -53,10 +58,10 @@ static Node_t* DiffOp(Node_t* node)
 #undef DEF_OP
 
 
-static Node_t* DiffPow(Node_t* node)
+static Node_t* DiffPow(Node_t* node, char var_diff_by)
 {
-    bool var_in_base  = CheckTreeForVars(node->left);
-    bool var_in_power = CheckTreeForVars(node->right);
+    bool var_in_base  = CheckTreeForVar(node->left, var_diff_by);
+    bool var_in_power = CheckTreeForVar(node->right, var_diff_by);
 
     if (var_in_base && var_in_power)
     {
@@ -66,12 +71,12 @@ static Node_t* DiffPow(Node_t* node)
                                     TreeCpy(node),
                                     _ADD(
                                         _MUL(
-                                            DiffNode(node->right),
+                                            DiffNode(node->right, var_diff_by),
                                             new_part_of_node
                                             ),
                                         _MUL(
                                             TreeCpy(node->right),
-                                            DiffNode(new_part_of_node)
+                                            DiffNode(new_part_of_node, var_diff_by)
                                             )
                                         )
                                     );
@@ -83,7 +88,7 @@ static Node_t* DiffPow(Node_t* node)
     else if (var_in_base)
     {
         return  _MUL(
-                    DiffNode(node->left),
+                    DiffNode(node->left, var_diff_by),
                     _MUL(
                         TreeCpy(node->right),
                         _POW(
@@ -100,7 +105,7 @@ static Node_t* DiffPow(Node_t* node)
     else if (var_in_power)
     {
         return  _MUL(
-                    DiffNode(node->right),
+                    DiffNode(node->right, var_diff_by),
                     _MUL(
                         _LN(TreeCpy(node->left)),
                         _POW(

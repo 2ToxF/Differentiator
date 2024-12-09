@@ -43,20 +43,20 @@ static const char* const COMMON_PDF_AUTHOR_NAME          = "Toxic";
 
 static const int         SIMPLE_FORMULAS_NUMBER          = 24;
 
-static CodeError MakeCommonTex             ();
-static CodeError MakeSpecialTex            ();
+static CodeError MakeCommonTex             (char var_diff_by);
+static CodeError MakeSpecialTex            (char var_diff_by);
 static CodeError PrepareTexFile            (DataForTex* tex_data);
-static CodeError ScanDiffTexFormulaCommon  (DataForTex* tex_data);
-static CodeError ScanDiffTexFormulaSpecial (DataForTex* tex_data);
+static CodeError ScanDiffTexFormulaCommon  (DataForTex* tex_data, char var_diff_by);
+static CodeError ScanDiffTexFormulaSpecial (DataForTex* tex_data, char var_diff_by);
 static CodeError TexEndAndClose            (DataForTex* tex_data);
 static CodeError TexHeader                 (DataForTex* tex_data);
 static CodeError TexOpen                   (DataForTex* tex_data);
 static void      TexTree                   (FILE*  tex_file_ptr, Node_t* node);
 
 
-CodeError MakeCommonPdf()
+CodeError MakeCommonPdf(char var_diff_by)
 {
-    CodeError code_err = MakeCommonTex();
+    CodeError code_err = MakeCommonTex(var_diff_by);
     CHECK_AND_CALL_ERROR_;
 
     if (system("pdflatex -aux-directory=" TEX_AUX_FILES_DIR " -quiet "
@@ -67,9 +67,9 @@ CodeError MakeCommonPdf()
 }
 
 
-CodeError MakeSpecialPdf()
+CodeError MakeSpecialPdf(char var_diff_by)
 {
-    CodeError code_err = MakeSpecialTex();
+    CodeError code_err = MakeSpecialTex(var_diff_by);
     CHECK_AND_CALL_ERROR_;
 
     if (system("pdflatex -aux-directory=" TEX_AUX_FILES_DIR " -quiet "
@@ -83,7 +83,7 @@ CodeError MakeSpecialPdf()
 #define PRINTF_TO_TEX_(__format__, ...) \
     fprintf(tex_data.tex_file_ptr, __format__, ##__VA_ARGS__)
 
-static CodeError MakeCommonTex()
+static CodeError MakeCommonTex(char var_diff_by)
 {
     DataForTex tex_data = {};
     tex_data.file_with_formulas_name = COMMON_FILE_WITH_FORMULAS_NAME;
@@ -96,7 +96,7 @@ static CodeError MakeCommonTex()
 
     while (tex_data.formulas_buffer_idx != tex_data.formulas_buffer_len - 1)
     {
-        code_err = ScanDiffTexFormulaCommon(&tex_data);
+        code_err = ScanDiffTexFormulaCommon(&tex_data, var_diff_by);
         CHECK_AND_CALL_ERROR_;
 
         if (tex_data.formulas_buffer_idx != tex_data.formulas_buffer_len - 1)
@@ -107,11 +107,11 @@ static CodeError MakeCommonTex()
 }
 
 
-#define SCAN_DIFF_TEX_FORMULA_SPECIAL_                \
-    code_err = ScanDiffTexFormulaSpecial(&tex_data);  \
+#define SCAN_DIFF_TEX_FORMULA_SPECIAL_                              \
+    code_err = ScanDiffTexFormulaSpecial(&tex_data, var_diff_by);   \
     CHECK_AND_CALL_ERROR_
 
-static CodeError MakeSpecialTex()
+static CodeError MakeSpecialTex(char var_diff_by)
 {
     DataForTex tex_data = {};
     tex_data.file_with_formulas_name = SPECIAL_FILE_WITH_FORMULAS_NAME;
@@ -175,7 +175,7 @@ static CodeError MakeSpecialTex()
 #define PRINTF_TO_TEX_(__format__, ...) \
     fprintf(tex_data->tex_file_ptr, __format__, ##__VA_ARGS__)
 
-static CodeError ScanDiffTexFormulaCommon(DataForTex* tex_data)
+static CodeError ScanDiffTexFormulaCommon(DataForTex* tex_data, char var_diff_by)
 {
     CodeError code_err = NO_ERR;
 
@@ -188,22 +188,28 @@ static CodeError ScanDiffTexFormulaCommon(DataForTex* tex_data)
     PRINTF_TO_TEX_("\\begin{equation}\n"
                           "(");
     TexTree(tex_data->tex_file_ptr, func_tree);
-    PRINTF_TO_TEX_(")_{x}^{'} = ");
+    PRINTF_TO_TEX_(")_{%c}^{'} = ", var_diff_by);
 
-    Node_t* diff_func_tree = DiffNode(func_tree);
+    Node_t* diff_func_tree = DiffNode(func_tree, var_diff_by);
     CHECK_AND_CALL_ERROR_;
 
     TexTree(tex_data->tex_file_ptr, diff_func_tree);
 
     PRINTF_TO_TEX_("\n\\end{equation}\n\n");
 
-    SimplifyTree(diff_func_tree, diff_func_tree, WITH_TEX, tex_data->tex_file_ptr, &code_err);
+    DataForSimplification simplify_data = {diff_func_tree,
+                                           diff_func_tree,
+                                           WITH_TEX,
+                                           tex_data->tex_file_ptr,
+                                           &code_err};
+    SimplifyTree(&simplify_data);
+    CHECK_AND_CALL_ERROR_;
 
     return code_err;
 }
 
 
-static CodeError ScanDiffTexFormulaSpecial(DataForTex* tex_data)
+static CodeError ScanDiffTexFormulaSpecial(DataForTex* tex_data, char var_diff_by)
 {
     CodeError code_err = NO_ERR;
 
@@ -216,11 +222,16 @@ static CodeError ScanDiffTexFormulaSpecial(DataForTex* tex_data)
     PRINTF_TO_TEX_("\\begin{equation}\n"
                           "(");
     TexTree(tex_data->tex_file_ptr, func_tree);
-    PRINTF_TO_TEX_(")_{x}^{'} = ");
+    PRINTF_TO_TEX_(")_{%c}^{'} = ", var_diff_by);
 
-    Node_t* diff_func_tree = DiffNode(func_tree);
+    Node_t* diff_func_tree = DiffNode(func_tree, var_diff_by);
 
-    SimplifyTree(diff_func_tree, diff_func_tree, NO_TEX, NULL, &code_err);
+    DataForSimplification simplify_data = {diff_func_tree,
+                                           diff_func_tree,
+                                           NO_TEX,
+                                           NULL,
+                                           &code_err};
+    SimplifyTree(&simplify_data);
     CHECK_AND_CALL_ERROR_;
 
     TexTree(tex_data->tex_file_ptr, diff_func_tree);
