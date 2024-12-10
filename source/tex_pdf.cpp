@@ -189,21 +189,22 @@ static CodeError ScanDiffTexFormulaCommon(DataForTex* tex_data, char var_diff_by
                           "(");
     TexTree(tex_data->tex_file_ptr, func_tree);
     PRINTF_TO_TEX_(")_{%c}^{'} = ", var_diff_by);
+    PRINTF_TO_TEX_("\n\\end{equation}\n\n");
 
     Node_t* diff_func_tree = DiffNode(func_tree, var_diff_by);
     CHECK_AND_CALL_ERROR_;
 
-    TexTree(tex_data->tex_file_ptr, diff_func_tree);
-
-    PRINTF_TO_TEX_("\n\\end{equation}\n\n");
-
     DataForSimplification simplify_data = {diff_func_tree,
                                            diff_func_tree,
-                                           WITH_TEX,
+                                           NO_TEX,
                                            tex_data->tex_file_ptr,
                                            &code_err};
     SimplifyTree(&simplify_data);
     CHECK_AND_CALL_ERROR_;
+
+    PRINTF_TO_TEX_("\\begin{equation*}\n");
+    TexTree(tex_data->tex_file_ptr, diff_func_tree);
+    PRINTF_TO_TEX_("\n\\end{equation*}\n\n");
 
     return code_err;
 }

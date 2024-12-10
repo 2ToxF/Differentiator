@@ -197,7 +197,7 @@ static bool SimplifyConstOne(Node_t* node, CodeError* /*p_code_err*/)
 }
 
 
-static bool SimplifyConstZero(Node_t* node, CodeError* p_code_err)
+static bool SimplifyConstZero(Node_t* node, CodeError* p_code_err)  // TODO: доделать DSL (_ltype, _rtype, _lvalue, _rvalue)
 {
     if (node->value.value_op == MUL)
         NullifyNode(node);

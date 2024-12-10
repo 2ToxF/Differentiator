@@ -36,7 +36,11 @@ DEF_OP(MUL,
     else
         TexTree(tex_file_ptr, node->left);
 
-    PRINTF_TO_TEX_(" \\cdot ");
+    if (!(node->left->type == CONST &&
+            (node->right->type == VAR ||
+                (node->right->type == OP && node->right->value.value_op > POW) ||
+                (node->right->type == OP && node->right->value.value_op == POW && node->right->left->type != CONST))))
+        PRINTF_TO_TEX_(" \\cdot ");
 
     if (node->right->type == OP && node->right->value.value_op <= SUB)
     {
