@@ -17,7 +17,7 @@ static Node_t* GetAddSub        (const char* const file_buffer, int* p);
 static Node_t* GetMulDiv        (const char* const file_buffer, int* p);
 static Node_t* GetPower         (const char* const file_buffer, int* p);
 static Node_t* GetBrackets      (const char* const file_buffer, int* p);
-static Node_t* GetStringNum     (const char* const file_buffer, int* p);
+static Node_t* GetStringOrNum   (const char* const file_buffer, int* p);
 static Node_t* GetVarFuncNode   (const char* const file_buffer, int* p);
 static void    GetVarFuncName   (const char* const file_buffer, int* p, char func_var_name[]);
 static Node_t* GetArgsForFunc   (const char* const file_buffer, int* p, const char* const func_name);
@@ -121,11 +121,11 @@ static Node_t* GetBrackets(const char* const file_buffer, int* p)
     }
 
     else
-        return GetStringNum(file_buffer, p);
+        return GetStringOrNum(file_buffer, p);
 }
 
 
-static Node_t* GetStringNum(const char* const file_buffer, int* p)
+static Node_t* GetStringOrNum(const char* const file_buffer, int* p)
 {
     int old_p = *p;
     Node_t* node = GetVarFuncNode(file_buffer, p);
@@ -147,12 +147,14 @@ static Node_t* GetVarFuncNode(const char* const file_buffer, int* p)
     if (*p - old_p == 0)
         return NULL;
 
-    if (*p - old_p == 1 && file_buffer[*p] != '(')
+    if (*p - old_p == 1)
         return _VAR(*func_or_var_name);
 
-    else if (file_buffer[*p] == '(')
+    else
     {
-        ++(*p);
+        if (file_buffer[*p] == '(')
+            ++(*p);
+
         Node_t* node = GetArgsForFunc(file_buffer, p, func_or_var_name);
 
         if (file_buffer[*p] != ')')
