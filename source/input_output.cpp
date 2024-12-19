@@ -7,8 +7,6 @@
 #include "tree.h"
 #include "utils.h"
 
-static const int MAX_STR_VALUE_LEN = 40;
-
 
 CodeError MyFread(char** input_buffer, int* input_buffer_length, const char* input_file_name)
 {
